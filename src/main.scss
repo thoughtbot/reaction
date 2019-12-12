@@ -29,11 +29,19 @@ table tr td {
 }
 
 td.portal {
-  background: orange;
+  background-image: url('images/portal1.gif');
+
+  &.has-particle .particle {
+    display: none;
+  }
 }
 
 td.black-hole {
-  background: black;
+  background-image: url('images/blackHole.gif');
+
+  &.has-particle .particle {
+    display: none;
+  }
 }
 
 td.change-direction {
