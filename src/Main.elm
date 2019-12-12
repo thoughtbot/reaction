@@ -1,9 +1,9 @@
 module Main exposing (..)
 
 import Browser
-import Game
+import Game exposing (Obstacle(..), Particle, Size(..))
 import Html exposing (..)
-import Html.Attributes exposing (src)
+import Html.Attributes exposing (class, classList, src)
 import Html.Events exposing (onClick)
 
 
@@ -46,9 +46,50 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ text <| Debug.toString model
+        [ renderBoard <| Game.renderableBoard model
         , button [ onClick AdvanceBoard ] [ text "Advance" ]
         ]
+
+
+obstacleClass : Obstacle -> List String
+obstacleClass obstacle =
+    case obstacle of
+        Cluster (Size n) _ ->
+            [ "cluster", "cluster-" ++ String.fromInt n ]
+
+        Portal _ _ ->
+            [ "portal" ]
+
+        Mirror _ ->
+            [ "mirror" ]
+
+        ChangeDirection direction _ ->
+            [ "change-direction", "change-direction-" ++ Game.showDirection direction ]
+
+        BlackHole _ ->
+            [ "black-hole" ]
+
+
+renderBoard : List (List ( List Particle, Maybe Obstacle )) -> Html Msg
+renderBoard boardTiles =
+    let
+        renderRow columns =
+            tr [] (List.map renderColumn columns)
+
+        renderColumn ( particles, obstacle ) =
+            td [ classList <| Maybe.withDefault [] <| Maybe.map (\o -> List.map (\s -> ( s, True )) <| obstacleClass o) obstacle ]
+                [ span [] [ text <| showParticles particles ]
+                ]
+
+        showParticles particles =
+            case List.length particles of
+                0 ->
+                    ""
+
+                n ->
+                    String.fromInt n
+    in
+    table [ class "board" ] (List.map renderRow boardTiles)
 
 
 

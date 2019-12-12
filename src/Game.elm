@@ -1,8 +1,18 @@
-module Game exposing (Board, advanceBoard, initial)
+module Game exposing (Board, Obstacle(..), Particle, Size(..), advanceBoard, initial, renderableBoard, showDirection)
+
+import List.Extra as List
 
 
 type Board
-    = Board ParticleId (List Particle) (List Obstacle)
+    = Board ParticleId Width Height (List Particle) (List Obstacle)
+
+
+type Width
+    = Width Int
+
+
+type Height
+    = Height Int
 
 
 type ParticleId
@@ -44,8 +54,72 @@ type Y
     = Y Int
 
 
+showDirection : Direction -> String
+showDirection direction =
+    case direction of
+        Up ->
+            "up"
+
+        Down ->
+            "down"
+
+        Left ->
+            "left"
+
+        Right ->
+            "right"
+
+
+coordinatesFromPair : ( Int, Int ) -> Coordinates
+coordinatesFromPair ( x, y ) =
+    Coordinates (X x) (Y y)
+
+
+renderableBoard : Board -> List (List ( List Particle, Maybe Obstacle ))
+renderableBoard (Board _ (Width w) (Height h) particles obstacles) =
+    let
+        tileInformation coordinates =
+            ( particlesAtCoordinates particles coordinates, obstacleAtCoordinates obstacles coordinates )
+
+        xs =
+            List.range 0 (w - 1)
+
+        ys =
+            List.range 0 (h - 1)
+
+        allCoordinates =
+            List.reverse <| List.map (\y -> List.map (\x -> coordinatesFromPair ( x, y )) xs) ys
+    in
+    List.map (List.map tileInformation) allCoordinates
+
+
+obstacleAtCoordinates : List Obstacle -> Coordinates -> Maybe Obstacle
+obstacleAtCoordinates obstacles coordinates =
+    List.filter (singleObstacleAtCoordinates coordinates) obstacles
+        |> List.head
+
+
+singleObstacleAtCoordinates : Coordinates -> Obstacle -> Bool
+singleObstacleAtCoordinates coordinates obstacle =
+    case obstacle of
+        Cluster _ coords ->
+            coords == coordinates
+
+        Portal coords1 coords2 ->
+            coords1 == coordinates || coords2 == coordinates
+
+        Mirror coords ->
+            coords == coordinates
+
+        ChangeDirection _ coords ->
+            coords == coordinates
+
+        BlackHole coords ->
+            coords == coordinates
+
+
 advanceBoard : Board -> Board
-advanceBoard ((Board _ _ obstacles) as board) =
+advanceBoard ((Board _ _ _ _ obstacles) as board) =
     List.foldl handleObstacle board obstacles
         |> advanceParticles
 
@@ -121,7 +195,7 @@ reverseDirection direction =
 
 
 handleObstacle : Obstacle -> Board -> Board
-handleObstacle obstacle ((Board particleId particles obstacles) as board) =
+handleObstacle obstacle ((Board particleId width height particles obstacles) as board) =
     case obstacle of
         Cluster (Size n) coordinates ->
             let
@@ -131,6 +205,8 @@ handleObstacle obstacle ((Board particleId particles obstacles) as board) =
             if excess >= 0 then
                 Board
                     particleId
+                    width
+                    height
                     (particlesNotAtCoordinates particles coordinates ++ List.take excess (particlesAtCoordinates particles coordinates))
                     (List.filter (\o -> o /= obstacle) obstacles)
                     |> reactionAt coordinates
@@ -139,17 +215,21 @@ handleObstacle obstacle ((Board particleId particles obstacles) as board) =
                 board
 
         BlackHole coordinates ->
-            Board particleId (particlesNotAtCoordinates particles coordinates) obstacles
+            Board particleId width height (particlesNotAtCoordinates particles coordinates) obstacles
 
         Mirror coordinates ->
             Board
                 particleId
+                width
+                height
                 (mapParticlesAtCoordinates (mapDirection reverseDirection) particles coordinates)
                 obstacles
 
         ChangeDirection newDirection coordinates ->
             Board
                 particleId
+                width
+                height
                 (mapParticlesAtCoordinates (mapDirection (always newDirection)) particles coordinates)
                 obstacles
 
@@ -165,13 +245,15 @@ handleObstacle obstacle ((Board particleId particles obstacles) as board) =
             in
             Board
                 particleId
+                width
+                height
                 (particlesNotAtAnyCoordinates particles [ coordinates1, coordinates2 ] ++ particlesAtCoordinates1 ++ particlesAtCoordinates2)
                 obstacles
 
 
 advanceParticles : Board -> Board
-advanceParticles (Board particleId particles obstacles) =
-    Board particleId (List.map advanceParticle particles) obstacles
+advanceParticles (Board particleId width height particles obstacles) =
+    Board particleId width height (List.map advanceParticle particles) obstacles
 
 
 advanceParticle : Particle -> Particle
@@ -193,9 +275,12 @@ advanceParticle (Particle particleId direction (Coordinates (X x) (Y y))) =
 initial : Board
 initial =
     Board initialParticleId
+        (Width 8)
+        (Height 8)
         []
         [ Cluster (Size 3) (Coordinates (X 4) (Y 1))
-        , Cluster (Size 3) (Coordinates (X 0) (Y 1))
+
+        -- , Cluster (Size 3) (Coordinates (X 0) (Y 1))
         , BlackHole (Coordinates (X 4) (Y 3))
         ]
         |> createParticle Up (Coordinates (X 4) (Y 0))
@@ -211,12 +296,12 @@ reactionAt coordinates board =
 
 
 createParticle : Direction -> Coordinates -> Board -> Board
-createParticle direction coordinates (Board (ParticleId particleId) particles obstacles) =
+createParticle direction coordinates (Board (ParticleId particleId) width height particles obstacles) =
     let
         newParticle =
             Particle (ParticleId particleId) direction coordinates
     in
-    Board (ParticleId <| particleId + 1) (newParticle :: particles) obstacles
+    Board (ParticleId <| particleId + 1) width height (newParticle :: particles) obstacles
 
 
 initialParticleId : ParticleId

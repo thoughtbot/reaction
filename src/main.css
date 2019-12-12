@@ -24,3 +24,45 @@ img {
   margin: 20px 0;
   max-width: 200px;
 }
+
+table {
+  border-collapse: collapse;
+}
+
+table tr td {
+  border: 1px solid #ddd;
+  width: 1.5em;
+  height: 1.5em;
+}
+
+td.portal {
+  background: orange;
+}
+
+td.black-hole {
+  background: black;
+}
+
+td.change-direction {
+  background: yellow;
+}
+
+td.mirror {
+  background: blue;
+}
+
+td.cluster {
+  background: white;
+}
+
+td.cluster-1 {
+  background: #faa;
+}
+
+td.cluster-2 {
+  background: #f99;
+}
+
+td.cluster-3 {
+  background: #f00;
+}
