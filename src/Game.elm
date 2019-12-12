@@ -133,6 +133,12 @@ handleObstacle obstacle ((Board particleId particles obstacles) as board) =
                 (mapParticlesAtCoordinates (mapDirection reverseDirection) particles coordinates)
                 obstacles
 
+        ChangeDirection newDirection coordinates ->
+            Board
+                particleId
+                (mapParticlesAtCoordinates (mapDirection (always newDirection)) particles coordinates)
+                obstacles
+
         _ ->
             board
 
