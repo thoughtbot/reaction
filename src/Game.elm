@@ -1,4 +1,15 @@
-module Game exposing (Board, Obstacle(..), Particle, Size(..), advanceBoard, initial, particleDirection, renderableBoard, showDirection)
+module Game exposing
+    ( Board
+    , Obstacle(..)
+    , Particle
+    , Size(..)
+    , advanceBoard
+    , incrementClicksOnCluster
+    , initial
+    , particleDirection
+    , renderableBoard
+    , showDirection
+    )
 
 import List.Extra as List
 
@@ -96,6 +107,24 @@ renderableBoard (Board _ (Width w) (Height h) particles obstacles) =
             List.reverse <| List.map (\y -> List.map (\x -> coordinatesFromPair ( x, y )) xs) ys
     in
     List.map (List.map tileInformation) allCoordinates
+
+
+incrementClicksOnCluster : Coordinates -> Board -> Board
+incrementClicksOnCluster coordinates ((Board particleId width height particles obstacles) as board) =
+    case obstacleAtCoordinates obstacles coordinates of
+        Just ((Cluster (Size n) coords) as obstacle) ->
+            let
+                newObstacle =
+                    Cluster (Size <| n + 1) coords
+            in
+            Board particleId
+                width
+                height
+                particles
+                (newObstacle :: List.filter (\o -> o /= obstacle) obstacles)
+
+        _ ->
+            board
 
 
 obstacleAtCoordinates : List Obstacle -> Coordinates -> Maybe Obstacle

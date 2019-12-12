@@ -5,6 +5,7 @@ import Game exposing (Obstacle(..), Particle, Size(..))
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, src)
 import Html.Events exposing (onClick)
+import Time
 
 
 
@@ -27,6 +28,7 @@ init =
 type Msg
     = NoOp
     | AdvanceBoard
+    | ClickObstacle (Maybe Obstacle)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -38,6 +40,12 @@ update msg model =
         AdvanceBoard ->
             ( Game.advanceBoard model, Cmd.none )
 
+        ClickObstacle (Just (Cluster _ coordinates)) ->
+            ( Game.incrementClicksOnCluster coordinates model, Cmd.none )
+
+        ClickObstacle _ ->
+            ( model, Cmd.none )
+
 
 
 ---- VIEW ----
@@ -47,7 +55,6 @@ view : Model -> Html Msg
 view model =
     div []
         [ renderBoard <| Game.renderableBoard model
-        , button [ onClick AdvanceBoard ] [ text "Advance" ]
         ]
 
 
@@ -80,7 +87,7 @@ renderBoard boardTiles =
             (Maybe.withDefault [] <| Maybe.map (\o -> List.map (\s -> ( s, True )) <| obstacleClass o) obstacle) ++ [ ( "has-particle", List.length particles > 0 ) ]
 
         renderColumn ( particles, obstacle ) =
-            td [ classList <| classes particles obstacle ]
+            td [ classList <| classes particles obstacle, onClick <| ClickObstacle obstacle ]
                 (List.map showParticle particles)
 
         showParticle particle =
@@ -99,5 +106,5 @@ main =
         { view = view
         , init = \_ -> init
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = \_ -> Time.every 200 (always AdvanceBoard)
         }
