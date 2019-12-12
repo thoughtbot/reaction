@@ -107,5 +107,5 @@ main =
         { view = view
         , init = \_ -> init
         , update = update
-        , subscriptions = \_ -> Time.every 200 (always AdvanceBoard)
+        , subscriptions = \_ -> Time.every 600 (always AdvanceBoard)
         }
