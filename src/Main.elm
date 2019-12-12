@@ -54,7 +54,8 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ renderBoard <| Game.renderableBoard model
+        [ h2 [] [ text <| "Clicks: " ++ (String.fromInt <| Game.clicksMade model) ]
+        , renderBoard <| Game.renderableBoard model
         ]
 
 

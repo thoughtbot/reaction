@@ -4,6 +4,7 @@ module Game exposing
     , Particle
     , Size(..)
     , advanceBoard
+    , clicksMade
     , incrementClicksOnCluster
     , initial
     , particleDirection
@@ -14,8 +15,12 @@ module Game exposing
 import List.Extra as List
 
 
+type ClickCounter
+    = ClickCounter Int
+
+
 type Board
-    = Board ParticleId Width Height (List Particle) (List Obstacle)
+    = Board ParticleId ClickCounter Width Height (List Particle) (List Obstacle)
 
 
 type Width
@@ -65,6 +70,11 @@ type Y
     = Y Int
 
 
+clicksMade : Board -> Int
+clicksMade (Board _ (ClickCounter n) _ _ _ _) =
+    n
+
+
 showDirection : Direction -> String
 showDirection direction =
     case direction of
@@ -92,7 +102,7 @@ coordinatesFromPair ( x, y ) =
 
 
 renderableBoard : Board -> List (List ( List Particle, Maybe Obstacle ))
-renderableBoard (Board _ (Width w) (Height h) particles obstacles) =
+renderableBoard (Board _ _ (Width w) (Height h) particles obstacles) =
     let
         tileInformation coordinates =
             ( particlesAtCoordinates particles coordinates, obstacleAtCoordinates obstacles coordinates )
@@ -110,7 +120,7 @@ renderableBoard (Board _ (Width w) (Height h) particles obstacles) =
 
 
 incrementClicksOnCluster : Coordinates -> Board -> Board
-incrementClicksOnCluster coordinates ((Board particleId width height particles obstacles) as board) =
+incrementClicksOnCluster coordinates ((Board particleId (ClickCounter clicks) width height particles obstacles) as board) =
     case obstacleAtCoordinates obstacles coordinates of
         Just ((Cluster (Size n) coords) as obstacle) ->
             let
@@ -118,6 +128,7 @@ incrementClicksOnCluster coordinates ((Board particleId width height particles o
                     Cluster (Size <| n + 1) coords
             in
             Board particleId
+                (ClickCounter <| clicks + 1)
                 width
                 height
                 particles
@@ -153,7 +164,7 @@ singleObstacleAtCoordinates coordinates obstacle =
 
 
 advanceBoard : Board -> Board
-advanceBoard ((Board _ _ _ _ obstacles) as board) =
+advanceBoard ((Board _ _ _ _ _ obstacles) as board) =
     List.foldl handleObstacle board obstacles
         |> advanceParticles
 
@@ -239,7 +250,7 @@ increaseClusterSize increasedSize obstacle =
 
 
 handleObstacle : Obstacle -> Board -> Board
-handleObstacle obstacle ((Board particleId width height particles obstacles) as board) =
+handleObstacle obstacle ((Board particleId clickCounter width height particles obstacles) as board) =
     case obstacle of
         Cluster (Size n) coordinates ->
             let
@@ -249,6 +260,7 @@ handleObstacle obstacle ((Board particleId width height particles obstacles) as 
             if excess >= 0 then
                 Board
                     particleId
+                    clickCounter
                     width
                     height
                     (particlesNotAtCoordinates particles coordinates ++ List.take excess (particlesAtCoordinates particles coordinates))
@@ -263,17 +275,19 @@ handleObstacle obstacle ((Board particleId width height particles obstacles) as 
                 in
                 Board
                     particleId
+                    clickCounter
                     width
                     height
                     (particlesNotAtCoordinates particles coordinates)
                     (newObstacle :: List.filter (\o -> o /= obstacle) obstacles)
 
         BlackHole coordinates ->
-            Board particleId width height (particlesNotAtCoordinates particles coordinates) obstacles
+            Board particleId clickCounter width height (particlesNotAtCoordinates particles coordinates) obstacles
 
         Mirror coordinates ->
             Board
                 particleId
+                clickCounter
                 width
                 height
                 (mapParticlesAtCoordinates (mapDirection reverseDirection) particles coordinates)
@@ -282,6 +296,7 @@ handleObstacle obstacle ((Board particleId width height particles obstacles) as 
         ChangeDirection newDirection coordinates ->
             Board
                 particleId
+                clickCounter
                 width
                 height
                 (mapParticlesAtCoordinates (mapDirection (always newDirection)) particles coordinates)
@@ -299,6 +314,7 @@ handleObstacle obstacle ((Board particleId width height particles obstacles) as 
             in
             Board
                 particleId
+                clickCounter
                 width
                 height
                 (particlesNotAtAnyCoordinates particles [ coordinates1, coordinates2 ] ++ particlesAtCoordinates1 ++ particlesAtCoordinates2)
@@ -306,8 +322,8 @@ handleObstacle obstacle ((Board particleId width height particles obstacles) as 
 
 
 advanceParticles : Board -> Board
-advanceParticles (Board particleId width height particles obstacles) =
-    Board particleId width height (List.map advanceParticle particles) obstacles
+advanceParticles (Board particleId clickCounter width height particles obstacles) =
+    Board particleId clickCounter width height (List.map advanceParticle particles) obstacles
 
 
 advanceParticle : Particle -> Particle
@@ -329,6 +345,7 @@ advanceParticle (Particle particleId direction (Coordinates (X x) (Y y))) =
 initial : Board
 initial =
     Board initialParticleId
+        (ClickCounter 0)
         (Width 8)
         (Height 8)
         []
@@ -352,12 +369,12 @@ reactionAt coordinates board =
 
 
 createParticle : Direction -> Coordinates -> Board -> Board
-createParticle direction coordinates (Board (ParticleId particleId) width height particles obstacles) =
+createParticle direction coordinates (Board (ParticleId particleId) clickCounter width height particles obstacles) =
     let
         newParticle =
             Particle (ParticleId particleId) direction coordinates
     in
-    Board (ParticleId <| particleId + 1) width height (newParticle :: particles) obstacles
+    Board (ParticleId <| particleId + 1) clickCounter width height (newParticle :: particles) obstacles
 
 
 initialParticleId : ParticleId
