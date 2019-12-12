@@ -4,6 +4,7 @@ import Browser
 import Game
 import Html exposing (..)
 import Html.Attributes exposing (src)
+import Html.Events exposing (onClick)
 
 
 
@@ -25,11 +26,17 @@ init =
 
 type Msg
     = NoOp
+    | AdvanceBoard
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
+        AdvanceBoard ->
+            ( Game.advanceBoard model, Cmd.none )
 
 
 
@@ -40,6 +47,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ text <| Debug.toString model
+        , button [ onClick AdvanceBoard ] [ text "Advance" ]
         ]
 
 
