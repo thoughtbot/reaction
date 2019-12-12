@@ -57,22 +57,53 @@ advanceBoard ((Board _ _ obstacles) as board) =
 --   and also do whatever we need to do with the obstacle
 
 
+particleAtCoordinates : Coordinates -> Particle -> Bool
+particleAtCoordinates coords (Particle _ _ particleCoords) =
+    coords == particleCoords
+
+
 particlesAtCoordinates : List Particle -> Coordinates -> List Particle
 particlesAtCoordinates particles coordinates =
-    let
-        particleAtCoordinates coords (Particle _ _ particleCoords) =
-            coords == particleCoords
-    in
     List.filter (particleAtCoordinates coordinates) particles
 
 
 particlesNotAtCoordinates : List Particle -> Coordinates -> List Particle
 particlesNotAtCoordinates particles coordinates =
-    let
-        particleAtCoordinates coords (Particle _ _ particleCoords) =
-            coords /= particleCoords
-    in
-    List.filter (particleAtCoordinates coordinates) particles
+    List.filter (not << particleAtCoordinates coordinates) particles
+
+
+mapParticlesAtCoordinates : (Particle -> Particle) -> List Particle -> Coordinates -> List Particle
+mapParticlesAtCoordinates f particles coordinates =
+    List.map
+        (\particle ->
+            if particleAtCoordinates coordinates particle then
+                f particle
+
+            else
+                particle
+        )
+        particles
+
+
+mapDirection : (Direction -> Direction) -> Particle -> Particle
+mapDirection f (Particle particleId direction coordinates) =
+    Particle particleId (f direction) coordinates
+
+
+reverseDirection : Direction -> Direction
+reverseDirection direction =
+    case direction of
+        Up ->
+            Down
+
+        Down ->
+            Up
+
+        Left ->
+            Right
+
+        Right ->
+            Left
 
 
 handleObstacle : Obstacle -> Board -> Board
@@ -95,6 +126,12 @@ handleObstacle obstacle ((Board particleId particles obstacles) as board) =
 
         BlackHole coordinates ->
             Board particleId (particlesNotAtCoordinates particles coordinates) obstacles
+
+        Mirror coordinates ->
+            Board
+                particleId
+                (mapParticlesAtCoordinates (mapDirection reverseDirection) particles coordinates)
+                obstacles
 
         _ ->
             board
