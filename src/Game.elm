@@ -72,6 +72,15 @@ particlesNotAtCoordinates particles coordinates =
     List.filter (not << particleAtCoordinates coordinates) particles
 
 
+particlesNotAtAnyCoordinates : List Particle -> List Coordinates -> List Particle
+particlesNotAtAnyCoordinates particles coordinatesList =
+    List.filter
+        (\(Particle _ _ coordinates) ->
+            not <| List.member coordinates coordinatesList
+        )
+        particles
+
+
 mapParticlesAtCoordinates : (Particle -> Particle) -> List Particle -> Coordinates -> List Particle
 mapParticlesAtCoordinates f particles coordinates =
     List.map
@@ -83,6 +92,11 @@ mapParticlesAtCoordinates f particles coordinates =
                 particle
         )
         particles
+
+
+mapCoordinates : (Coordinates -> Coordinates) -> Particle -> Particle
+mapCoordinates f (Particle particleId direction coordinates) =
+    Particle particleId direction (f coordinates)
 
 
 mapDirection : (Direction -> Direction) -> Particle -> Particle
@@ -139,8 +153,20 @@ handleObstacle obstacle ((Board particleId particles obstacles) as board) =
                 (mapParticlesAtCoordinates (mapDirection (always newDirection)) particles coordinates)
                 obstacles
 
-        _ ->
-            board
+        Portal coordinates1 coordinates2 ->
+            let
+                particlesAtCoordinates1 =
+                    particlesAtCoordinates particles coordinates2
+                        |> List.map (mapCoordinates (always coordinates1))
+
+                particlesAtCoordinates2 =
+                    particlesAtCoordinates particles coordinates1
+                        |> List.map (mapCoordinates (always coordinates2))
+            in
+            Board
+                particleId
+                (particlesNotAtAnyCoordinates particles [ coordinates1, coordinates2 ] ++ particlesAtCoordinates1 ++ particlesAtCoordinates2)
+                obstacles
 
 
 advanceParticles : Board -> Board
