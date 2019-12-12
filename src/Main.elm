@@ -76,18 +76,15 @@ renderBoard boardTiles =
         renderRow columns =
             tr [] (List.map renderColumn columns)
 
+        classes particles obstacle =
+            (Maybe.withDefault [] <| Maybe.map (\o -> List.map (\s -> ( s, True )) <| obstacleClass o) obstacle) ++ [ ( "has-particle", List.length particles > 0 ) ]
+
         renderColumn ( particles, obstacle ) =
-            td [ classList <| Maybe.withDefault [] <| Maybe.map (\o -> List.map (\s -> ( s, True )) <| obstacleClass o) obstacle ]
-                [ span [] [ text <| showParticles particles ]
-                ]
+            td [ classList <| classes particles obstacle ]
+                (List.map showParticle particles)
 
-        showParticles particles =
-            case List.length particles of
-                0 ->
-                    ""
-
-                n ->
-                    String.fromInt n
+        showParticle particle =
+            span [ class <| "particle particle-" ++ (Game.showDirection <| Game.particleDirection particle) ] []
     in
     table [ class "board" ] (List.map renderRow boardTiles)
 

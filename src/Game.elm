@@ -1,4 +1,4 @@
-module Game exposing (Board, Obstacle(..), Particle, Size(..), advanceBoard, initial, renderableBoard, showDirection)
+module Game exposing (Board, Obstacle(..), Particle, Size(..), advanceBoard, initial, particleDirection, renderableBoard, showDirection)
 
 import List.Extra as List
 
@@ -68,6 +68,11 @@ showDirection direction =
 
         Right ->
             "right"
+
+
+particleDirection : Particle -> Direction
+particleDirection (Particle _ direction _) =
+    direction
 
 
 coordinatesFromPair : ( Int, Int ) -> Coordinates
@@ -194,6 +199,16 @@ reverseDirection direction =
             Left
 
 
+increaseClusterSize : Int -> Obstacle -> Obstacle
+increaseClusterSize increasedSize obstacle =
+    case obstacle of
+        Cluster (Size n) coordinates ->
+            Cluster (Size <| n + increasedSize) coordinates
+
+        _ ->
+            obstacle
+
+
 handleObstacle : Obstacle -> Board -> Board
 handleObstacle obstacle ((Board particleId width height particles obstacles) as board) =
     case obstacle of
@@ -212,7 +227,17 @@ handleObstacle obstacle ((Board particleId width height particles obstacles) as 
                     |> reactionAt coordinates
 
             else
-                board
+                let
+                    newObstacle =
+                        obstacle
+                            |> increaseClusterSize (List.length <| particlesAtCoordinates particles coordinates)
+                in
+                Board
+                    particleId
+                    width
+                    height
+                    (particlesNotAtCoordinates particles coordinates)
+                    (newObstacle :: List.filter (\o -> o /= obstacle) obstacles)
 
         BlackHole coordinates ->
             Board particleId width height (particlesNotAtCoordinates particles coordinates) obstacles
@@ -280,6 +305,7 @@ initial =
         []
         [ Cluster (Size 3) (Coordinates (X 4) (Y 1))
         , Cluster (Size 3) (Coordinates (X 0) (Y 1))
+        , Cluster (Size 1) (Coordinates (X 6) (Y 1))
         , Portal (Coordinates (X 0) (Y 3)) (Coordinates (X 6) (Y 3))
         , ChangeDirection Left (Coordinates (X 6) (Y 5))
         , BlackHole (Coordinates (X 4) (Y 3))

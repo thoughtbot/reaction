@@ -24,8 +24,8 @@ table {
 
 table tr td {
   border: 1px solid #ddd;
-  width: 1.5em;
-  height: 1.5em;
+  width: 200px;
+  height: 200px;
 }
 
 td.portal {
@@ -49,13 +49,48 @@ td.cluster {
 }
 
 td.cluster-1 {
-  background: #faa;
+  background-image: url('images/oneCore.gif');
+
+  &.has-particle {
+    background-image: url('images/oneToTwoCore.gif');
+
+    .particle {
+      display: none;
+    }
+  }
 }
 
 td.cluster-2 {
-  background: #f99;
+  background-image: url('images/twoCore.gif');
+
+  &.has-particle {
+    background-image: url('images/twoToThreeCore.gif');
+
+    .particle {
+      display: none;
+    }
+  }
 }
 
 td.cluster-3 {
-  background: #f00;
+  background-image: url('images/threeCore.gif');
+
+  &.has-particle {
+    background-image: url('images/threeToFourCore.gif');
+
+    .particle {
+      display: none;
+    }
+  }
 }
+
+.particle {
+  display: inline-block;
+  width: 100px;
+  height: 100px;
+  background: transparent url('images/projectile2.gif') no-repeat center;
+}
+
+.particle-left { transform: rotate(270deg); }
+.particle-right { transform: rotate(90deg); }
+.particle-down { transform: rotate(180deg); }
