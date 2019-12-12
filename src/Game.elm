@@ -93,6 +93,9 @@ handleObstacle obstacle ((Board particleId particles obstacles) as board) =
             else
                 board
 
+        BlackHole coordinates ->
+            Board particleId (particlesNotAtCoordinates particles coordinates) obstacles
+
         _ ->
             board
 
@@ -120,7 +123,12 @@ advanceParticle (Particle particleId direction (Coordinates (X x) (Y y))) =
 
 initial : Board
 initial =
-    Board initialParticleId [] [ Cluster (Size 3) (Coordinates (X 4) (Y 1)), Cluster (Size 3) (Coordinates (X 0) (Y 1)) ]
+    Board initialParticleId
+        []
+        [ Cluster (Size 3) (Coordinates (X 4) (Y 1))
+        , Cluster (Size 3) (Coordinates (X 0) (Y 1))
+        , BlackHole (Coordinates (X 4) (Y 3))
+        ]
         |> createParticle Up (Coordinates (X 4) (Y 0))
 
 
