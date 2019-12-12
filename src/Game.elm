@@ -1,12 +1,16 @@
 module Game exposing
     ( Board
+    , Game(..)
     , Obstacle(..)
     , Particle
     , Size(..)
     , advanceBoard
     , clicksMade
+    , completeGameWhenNoClustersRemain
     , incrementClicksOnCluster
     , initial
+    , isGameActive
+    , mapBoard
     , particleDirection
     , renderableBoard
     , showDirection
@@ -17,6 +21,12 @@ import List.Extra as List
 
 type ClickCounter
     = ClickCounter Int
+
+
+type Game
+    = NotStarted
+    | Started Board
+    | Complete Board ClickCounter
 
 
 type Board
@@ -70,9 +80,65 @@ type Y
     = Y Int
 
 
-clicksMade : Board -> Int
-clicksMade (Board _ (ClickCounter n) _ _ _ _) =
-    n
+isGameActive : Game -> Bool
+isGameActive game =
+    case game of
+        Started _ ->
+            True
+
+        _ ->
+            False
+
+
+boardContainsClusters : Board -> Bool
+boardContainsClusters (Board _ _ _ _ _ obstacles) =
+    List.any
+        (\o ->
+            case o of
+                Cluster _ _ ->
+                    True
+
+                _ ->
+                    False
+        )
+        obstacles
+
+
+completeGameWhenNoClustersRemain : Game -> Game
+completeGameWhenNoClustersRemain game =
+    case game of
+        Started ((Board _ clickCounter _ _ _ _) as board) ->
+            if boardContainsClusters board then
+                Started board
+
+            else
+                Complete board clickCounter
+
+        _ ->
+            game
+
+
+mapBoard : (Board -> Board) -> Game -> Game
+mapBoard f game =
+    case game of
+        Started board ->
+            Started <| f board
+
+        _ ->
+            game
+
+
+clicksMade : Game -> Int
+clicksMade game =
+    case game of
+        NotStarted ->
+            0
+
+        Started (Board _ (ClickCounter n) _ _ _ _) ->
+            n
+
+        Complete _ (ClickCounter n) ->
+            n
 
 
 showDirection : Direction -> String

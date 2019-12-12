@@ -13,12 +13,12 @@ import Time
 
 
 type alias Model =
-    Game.Board
+    Game.Game
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Game.initial, Cmd.none )
+    ( Game.NotStarted, Cmd.none )
 
 
 
@@ -27,6 +27,7 @@ init =
 
 type Msg
     = NoOp
+    | StartGame
     | AdvanceBoard
     | ClickObstacle (Maybe Obstacle)
 
@@ -37,11 +38,17 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
+        StartGame ->
+            ( Game.Started Game.initial, Cmd.none )
+
         AdvanceBoard ->
-            ( Game.advanceBoard model, Cmd.none )
+            ( Game.mapBoard Game.advanceBoard model
+                |> Game.completeGameWhenNoClustersRemain
+            , Cmd.none
+            )
 
         ClickObstacle (Just (Cluster _ coordinates)) ->
-            ( Game.incrementClicksOnCluster coordinates model, Cmd.none )
+            ( Game.mapBoard (Game.incrementClicksOnCluster coordinates) model, Cmd.none )
 
         ClickObstacle _ ->
             ( model, Cmd.none )
@@ -53,10 +60,21 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ h2 [] [ text <| "Clicks: " ++ (String.fromInt <| Game.clicksMade model) ]
-        , renderBoard <| Game.renderableBoard model
-        ]
+    case model of
+        Game.NotStarted ->
+            div [] [ button [ onClick StartGame ] [ text "Start game" ] ]
+
+        Game.Started board ->
+            div []
+                [ h2 [] [ text <| "Clicks: " ++ (String.fromInt <| Game.clicksMade model) ]
+                , renderBoard <| Game.renderableBoard board
+                ]
+
+        Game.Complete board _ ->
+            div []
+                [ h2 [] [ text <| "Complete! Clicks: " ++ (String.fromInt <| Game.clicksMade model) ]
+                , renderBoard <| Game.renderableBoard board
+                ]
 
 
 obstacleClass : Obstacle -> List String
@@ -107,5 +125,11 @@ main =
         { view = view
         , init = \_ -> init
         , update = update
-        , subscriptions = \_ -> Time.every 600 (always AdvanceBoard)
+        , subscriptions =
+            \game ->
+                if Game.isGameActive game then
+                    Time.every 600 (always AdvanceBoard)
+
+                else
+                    Sub.none
         }
