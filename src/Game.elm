@@ -167,6 +167,7 @@ advanceBoard : Board -> Board
 advanceBoard ((Board _ _ _ _ _ obstacles) as board) =
     List.foldl handleObstacle board obstacles
         |> advanceParticles
+        |> trimParticles
 
 
 
@@ -324,6 +325,15 @@ handleObstacle obstacle ((Board particleId clickCounter width height particles o
 advanceParticles : Board -> Board
 advanceParticles (Board particleId clickCounter width height particles obstacles) =
     Board particleId clickCounter width height (List.map advanceParticle particles) obstacles
+
+
+trimParticles : Board -> Board
+trimParticles (Board particleId clickCounter width height particles obstacles) =
+    let
+        particleWithinBounds (Width w) (Height h) (Particle _ _ (Coordinates (X x) (Y y))) =
+            List.member x (List.range 0 (w - 1)) && List.member y (List.range 0 (h - 1))
+    in
+    Board particleId clickCounter width height (List.filter (particleWithinBounds width height) particles) obstacles
 
 
 advanceParticle : Particle -> Particle
