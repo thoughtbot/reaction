@@ -279,8 +279,9 @@ initial =
         (Height 8)
         []
         [ Cluster (Size 3) (Coordinates (X 4) (Y 1))
-
-        -- , Cluster (Size 3) (Coordinates (X 0) (Y 1))
+        , Cluster (Size 3) (Coordinates (X 0) (Y 1))
+        , Portal (Coordinates (X 0) (Y 3)) (Coordinates (X 6) (Y 3))
+        , ChangeDirection Left (Coordinates (X 6) (Y 5))
         , BlackHole (Coordinates (X 4) (Y 3))
         ]
         |> createParticle Up (Coordinates (X 4) (Y 0))
