@@ -56,6 +56,15 @@ td.mirror {
   background-image: url('images/reverse.gif');
 }
 
+td.mirror-left {
+  background-image: url('images/mirror.gif');
+  transform: rotate(90deg);
+}
+
+td.mirror-right {
+  background-image: url('images/mirror.gif');
+}
+
 td.cluster {
   background: white;
 }

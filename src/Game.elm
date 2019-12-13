@@ -57,6 +57,8 @@ type Obstacle
     = Cluster Size Coordinates
     | Portal Coordinates Coordinates
     | Mirror Coordinates
+    | MirrorLeft Coordinates
+    | MirrorRight Coordinates
     | ChangeDirection Direction Coordinates
     | BlackHole Coordinates
 
@@ -222,6 +224,12 @@ singleObstacleAtCoordinates coordinates obstacle =
         Mirror coords ->
             coords == coordinates
 
+        MirrorLeft coords ->
+            coords == coordinates
+
+        MirrorRight coords ->
+            coords == coordinates
+
         ChangeDirection _ coords ->
             coords == coordinates
 
@@ -306,6 +314,38 @@ reverseDirection direction =
             Left
 
 
+mirrorLeftDirection : Direction -> Direction
+mirrorLeftDirection direction =
+    case direction of
+        Up ->
+            Left
+
+        Down ->
+            Right
+
+        Left ->
+            Up
+
+        Right ->
+            Down
+
+
+mirrorRightDirection : Direction -> Direction
+mirrorRightDirection direction =
+    case direction of
+        Up ->
+            Right
+
+        Down ->
+            Left
+
+        Left ->
+            Down
+
+        Right ->
+            Up
+
+
 increaseClusterSize : Int -> Obstacle -> Obstacle
 increaseClusterSize increasedSize obstacle =
     case obstacle of
@@ -358,6 +398,24 @@ handleObstacle obstacle ((Board particleId clickCounter width height particles o
                 width
                 height
                 (mapParticlesAtCoordinates (mapDirection reverseDirection) particles coordinates)
+                obstacles
+
+        MirrorLeft coordinates ->
+            Board
+                particleId
+                clickCounter
+                width
+                height
+                (mapParticlesAtCoordinates (mapDirection mirrorLeftDirection) particles coordinates)
+                obstacles
+
+        MirrorRight coordinates ->
+            Board
+                particleId
+                clickCounter
+                width
+                height
+                (mapParticlesAtCoordinates (mapDirection mirrorRightDirection) particles coordinates)
                 obstacles
 
         ChangeDirection newDirection coordinates ->
@@ -434,7 +492,10 @@ initial =
         , ChangeDirection Right (Coordinates (X 7) (Y 6))
         , ChangeDirection Down (Coordinates (X 2) (Y 7))
         , BlackHole (Coordinates (X 4) (Y 3))
-        , Mirror (Coordinates (X 2) (Y 5))
+
+        -- , Mirror (Coordinates (X 2) (Y 5))
+        , MirrorLeft (Coordinates (X 0) (Y 5))
+        , MirrorRight (Coordinates (X 0) (Y 7))
         ]
         |> createParticle Up (Coordinates (X 4) (Y 0))
 

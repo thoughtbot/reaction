@@ -89,6 +89,12 @@ obstacleClass obstacle =
         Mirror _ ->
             [ "mirror" ]
 
+        MirrorLeft _ ->
+            [ "mirror-left" ]
+
+        MirrorRight _ ->
+            [ "mirror-right" ]
+
         ChangeDirection direction _ ->
             [ "change-direction", "change-direction-" ++ Game.showDirection direction ]
 
