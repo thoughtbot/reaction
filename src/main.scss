@@ -1,4 +1,15 @@
-[data-elm-hot="true"] {
+html {
+  box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+html,
+body {
+  height: 100%;
+}[data-elm-hot="true"] {
   height: inherit;
 }
 
@@ -23,9 +34,16 @@ table {
 }
 
 table tr td {
-  border: 1px solid #ddd;
   width: 200px;
   height: 200px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  span {
+    display: block;
+    padding: 0;
+    margin: 0;
+  }
 }
 
 td.portal {
@@ -48,9 +66,26 @@ td.change-direction {
   background-image: url('images/arrow.gif');
 }
 
-.change-direction-up { transform: rotate(90deg); }
-.change-direction-right { transform: rotate(180deg); }
-.change-direction-down { transform: rotate(270deg); }
+.change-direction-up {
+  transform: rotate(90deg);
+
+  > * {
+    transform: rotate(-90deg);
+  }
+}
+.change-direction-right {
+  transform: rotate(180deg);
+
+  > * {
+    transform: rotate(-180deg);
+  }
+}
+.change-direction-down {
+  transform: rotate(270deg);
+  > * {
+    transform: rotate(-270deg);
+  }
+}
 
 td.mirror {
   background-image: url('images/reverse.gif');
@@ -105,6 +140,18 @@ td.cluster-3 {
   }
 }
 
+td.cluster-4 {
+  background-image: url('images/fourCore.gif');
+
+  &.has-particle {
+    background-image: url('images/fourExplosion.gif');
+
+    .particle {
+      display: none;
+    }
+  }
+}
+
 .particle {
   display: inline-block;
   width: 100px;
@@ -112,6 +159,7 @@ td.cluster-3 {
   background: transparent url('images/projectile2.gif') no-repeat center;
 }
 
+.particle-up { transform: rotate(0deg); }
 .particle-left { transform: rotate(270deg); }
 .particle-right { transform: rotate(90deg); }
 .particle-down { transform: rotate(180deg); }

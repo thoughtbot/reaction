@@ -111,6 +111,7 @@ parParser =
     succeed Par
         |. token "par: "
         |= int
+        |. newlineParser
 
 
 sepBy : Parser a -> Parser b -> Parser (List a)

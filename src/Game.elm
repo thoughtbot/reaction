@@ -10,12 +10,14 @@ module Game exposing
     , incrementClicksOnCluster
     , initial
     , isGameActive
+    , loadBoard
     , mapBoard
     , particleDirection
     , renderableBoard
     , showDirection
     )
 
+import GameParser exposing (ParsedBoard(..))
 import List.Extra as List
 
 
@@ -81,6 +83,17 @@ type X
 
 type Y
     = Y Int
+
+
+registerObstacle : Obstacle -> Board -> Board
+registerObstacle obstacle (Board particleId clickCounter width height particles obstacles) =
+    Board
+        particleId
+        clickCounter
+        width
+        height
+        particles
+        (obstacle :: obstacles)
 
 
 isGameActive : Game -> Bool
@@ -366,7 +379,7 @@ handleObstacle obstacle ((Board particleId clickCounter width height particles o
         Cluster (Size n) coordinates ->
             let
                 excess =
-                    List.length (particlesAtCoordinates particles coordinates) + n - 4
+                    List.length (particlesAtCoordinates particles coordinates) + n - 5
             in
             if excess >= 0 then
                 Board
@@ -567,3 +580,136 @@ createParticle direction coordinates (Board (ParticleId particleId) clickCounter
 initialParticleId : ParticleId
 initialParticleId =
     ParticleId 1
+
+
+loadBoard : String -> Maybe Board
+loadBoard input =
+    let
+        parsedBoard =
+            GameParser.parseBoard input
+    in
+    Result.toMaybe parsedBoard
+        |> Maybe.map parsedBoardToBoard
+
+
+parseObstacles : List ( Coordinates, GameParser.ParsedObstacle ) -> List (Maybe Obstacle)
+parseObstacles allObstacles =
+    let
+        nonPortals =
+            List.filter
+                (\( _, o ) -> not <| isPortal o)
+                allObstacles
+
+        portals =
+            List.filter
+                (\( _, o ) -> isPortal o)
+                allObstacles
+
+        isPortal o =
+            case o of
+                GameParser.Portal _ ->
+                    True
+
+                _ ->
+                    False
+
+        samePortals o1 o2 =
+            case ( o1, o2 ) of
+                ( GameParser.Portal n1, GameParser.Portal n2 ) ->
+                    n1 == n2
+
+                _ ->
+                    False
+
+        portalObstacles =
+            List.gatherWith (\( _, o1 ) ( _, o2 ) -> samePortals o1 o2) portals
+                |> List.map
+                    (\( o, os ) ->
+                        case ( o, os ) of
+                            ( ( c1, _ ), [ ( c2, _ ) ] ) ->
+                                Just <| Portal c1 c2
+
+                            _ ->
+                                Nothing
+                    )
+    in
+    List.map (\( c, o ) -> parseObstacle c o) nonPortals ++ portalObstacles
+
+
+parseObstacle : Coordinates -> GameParser.ParsedObstacle -> Maybe Obstacle
+parseObstacle coordinates parsedObstacle =
+    case parsedObstacle of
+        GameParser.Empty ->
+            Nothing
+
+        GameParser.Cluster size ->
+            Just <| Cluster (Size size) coordinates
+
+        GameParser.ChangeDirection GameParser.Up ->
+            Just <| ChangeDirection Up coordinates
+
+        GameParser.ChangeDirection GameParser.Down ->
+            Just <| ChangeDirection Down coordinates
+
+        GameParser.ChangeDirection GameParser.Left ->
+            Just <| ChangeDirection Left coordinates
+
+        GameParser.ChangeDirection GameParser.Right ->
+            Just <| ChangeDirection Right coordinates
+
+        GameParser.BlackHole ->
+            Just <| BlackHole coordinates
+
+        GameParser.Energizer ->
+            Just <| Energizer coordinates
+
+        GameParser.Mirror ->
+            Just <| Mirror coordinates
+
+        GameParser.MirrorLeft ->
+            Just <| MirrorLeft coordinates
+
+        GameParser.MirrorRight ->
+            Just <| MirrorRight coordinates
+
+        GameParser.Portal id ->
+            Nothing
+
+
+parsedBoardToBoard : GameParser.ParsedBoard -> Board
+parsedBoardToBoard parsedBoard =
+    let
+        (ParsedBoard _ rows) =
+            parsedBoard
+
+        width =
+            List.head cleanedRows |> Maybe.withDefault [] |> List.length
+
+        height =
+            List.length cleanedRows
+
+        cleanedRows =
+            List.filter (not << List.isEmpty) rows
+                |> List.reverse
+
+        obstaclesToAdd =
+            List.filterMap identity <|
+                parseObstacles <|
+                    List.concat <|
+                        List.indexedMap
+                            (\y row ->
+                                List.indexedMap
+                                    (\x col ->
+                                        ( coordinatesFromPair ( x, y ), col )
+                                    )
+                                    row
+                            )
+                            cleanedRows
+    in
+    Board initialParticleId
+        (ClickCounter 0)
+        (Width width)
+        (Height height)
+        []
+        []
+        |> (\board -> List.foldl (\o b -> registerObstacle o b) board obstaclesToAdd)
