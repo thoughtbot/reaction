@@ -34,11 +34,13 @@ table {
 }
 
 table tr td {
-  width: 200px;
-  height: 200px;
+  width: 100px;
+  height: 100px;
   padding: 0;
   margin: 0;
   overflow: hidden;
+  background-size: 100px;
+  background-repeat: no-repeat;
   span {
     display: block;
     padding: 0;
@@ -100,10 +102,6 @@ td.mirror-right {
   background-image: url('images/mirror.gif');
 }
 
-td.cluster {
-  background: white;
-}
-
 td.cluster-1 {
   background-image: url('images/oneCore.gif');
 
@@ -154,9 +152,10 @@ td.cluster-4 {
 
 .particle {
   display: inline-block;
-  width: 100px;
-  height: 100px;
-  background: transparent url('images/projectile2.gif') no-repeat center;
+  width: 20px;
+  height: 40px;
+  background-image: url('images/projectile2.gif');
+  background-size: 20px;
 }
 
 .particle-up { transform: rotate(0deg); }
