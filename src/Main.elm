@@ -29,6 +29,30 @@ init =
     )
 
 
+currentBoard : Model -> Maybe Game.Board
+currentBoard { game } =
+    case game of
+        Game.NotStarted ->
+            Nothing
+
+        Game.Started board ->
+            Just board
+
+        Game.Complete board _ _ ->
+            Just board
+
+
+nextBoard : Model -> Maybe Game.Board
+nextBoard ({ game, boards } as model) =
+    case currentBoard model of
+        Nothing ->
+            Nothing
+
+        Just board ->
+            List.filter (\b -> Game.getBoardId b == Game.getBoardId board) boards
+                |> List.head
+
+
 
 ---- UPDATE ----
 
@@ -92,8 +116,19 @@ view model =
         Game.Complete board _ _ ->
             div []
                 [ h2 [] [ text <| "Complete! Clicks: " ++ (String.fromInt <| Game.clicksMade model.game) ]
+                , nextBoardButton model
                 , renderBoard <| Game.renderableBoard board
                 ]
+
+
+nextBoardButton : Model -> Html Msg
+nextBoardButton model =
+    case nextBoard model of
+        Just nextBoard_ ->
+            button [ onClick <| StartGame nextBoard_ ] [ text "Go on to next board" ]
+
+        Nothing ->
+            text ""
 
 
 obstacleClass : Obstacle -> List String

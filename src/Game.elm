@@ -7,6 +7,7 @@ module Game exposing
     , advanceBoard
     , clicksMade
     , completeGameWhenNoClustersRemain
+    , getBoardId
     , incrementClicksOnCluster
     , isGameActive
     , loadBoards
@@ -91,6 +92,11 @@ type X
 
 type Y
     = Y Int
+
+
+getBoardId : Board -> BoardId
+getBoardId (Board boardId _ _ _ _ _ _ _) =
+    boardId
 
 
 parForBoard : Board -> Int
