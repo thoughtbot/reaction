@@ -60,6 +60,7 @@ nextBoard ({ game, boards } as model) =
 type Msg
     = NoOp
     | StartGame Game.Board
+    | EndGame
     | AdvanceBoard
     | ClickObstacle (Maybe Obstacle)
 
@@ -72,6 +73,9 @@ update msg model =
 
         StartGame board ->
             ( { model | game = Game.Started board }, Cmd.none )
+
+        EndGame ->
+            ( { model | game = Game.NotStarted }, Cmd.none )
 
         AdvanceBoard ->
             ( { model
@@ -110,12 +114,14 @@ view model =
             div []
                 [ h2 [] [ text <| "Clicks: " ++ (String.fromInt <| Game.clicksMade model.game) ]
                 , h2 [] [ text <| "Par: " ++ (String.fromInt <| Game.parForBoard board) ]
+                , button [ onClick EndGame ] [ text "End game" ]
                 , renderBoard <| Game.renderableBoard board
                 ]
 
         Game.Complete board _ _ ->
             div []
                 [ h2 [] [ text <| "Complete! Clicks: " ++ (String.fromInt <| Game.clicksMade model.game) ]
+                , button [ onClick EndGame ] [ text "End game" ]
                 , nextBoardButton model
                 , renderBoard <| Game.renderableBoard board
                 ]
