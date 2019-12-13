@@ -1,13 +1,14 @@
 {
   "devDependencies": {
-    "elm-format": "^0.8.2"
+    "elm-format": "^0.8.2",
+    "gh-pages": "^2.1.1"
   },
   "dependencies": {
     "node-sass-chokidar": "^1.4.0"
   },
   "scripts": {
     "build-css": "node-sass-chokidar src/ -o src/",
-    "watch-css":
-      "npm run build-css && node-sass-chokidar src/ -o src/ --watch --recursive"
+    "watch-css": "npm run build-css && node-sass-chokidar src/ -o src/ --watch --recursive",
+    "deploy": "gh-pages -d build"
   }
 }
