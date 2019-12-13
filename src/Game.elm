@@ -10,6 +10,7 @@ module Game exposing
     , incrementClicksOnCluster
     , isGameActive
     , loadBoard
+    , loadBoards
     , mapBoard
     , parForBoard
     , particleDirection
@@ -584,6 +585,17 @@ loadBoard input =
     in
     Result.toMaybe parsedBoard
         |> Maybe.map parsedBoardToBoard
+
+
+loadBoards : String -> List Board
+loadBoards input =
+    let
+        parsedBoards =
+            GameParser.parseBoards input
+    in
+    Result.toMaybe parsedBoards
+        |> Maybe.map (List.map parsedBoardToBoard)
+        |> Maybe.withDefault []
 
 
 parseObstacles : List ( Coordinates, GameParser.ParsedObstacle ) -> List (Maybe Obstacle)

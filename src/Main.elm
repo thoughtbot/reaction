@@ -2,9 +2,11 @@ module Main exposing (..)
 
 import Browser
 import Game exposing (Obstacle(..), Particle, Size(..))
+import GameParser
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, src)
 import Html.Events exposing (onClick)
+import Levels
 import Time
 
 
@@ -13,12 +15,18 @@ import Time
 
 
 type alias Model =
-    Game.Game
+    { game : Game.Game
+    , boards : List Game.Board
+    }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Game.NotStarted, Cmd.none )
+    ( { game = Game.NotStarted
+      , boards = Game.loadBoards Levels.levels
+      }
+    , Cmd.none
+    )
 
 
 
@@ -27,7 +35,7 @@ init =
 
 type Msg
     = NoOp
-    | StartGame
+    | StartGame Game.Board
     | AdvanceBoard
     | ClickObstacle (Maybe Obstacle)
 
@@ -38,22 +46,20 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        StartGame ->
-            case Game.loadBoard input of
-                Just board ->
-                    ( Game.Started board, Cmd.none )
-
-                Nothing ->
-                    ( Game.NotStarted, Cmd.none )
+        StartGame board ->
+            ( { model | game = Game.Started board }, Cmd.none )
 
         AdvanceBoard ->
-            ( Game.mapBoard Game.advanceBoard model
-                |> Game.completeGameWhenNoClustersRemain
+            ( { model
+                | game =
+                    Game.mapBoard Game.advanceBoard model.game
+                        |> Game.completeGameWhenNoClustersRemain
+              }
             , Cmd.none
             )
 
         ClickObstacle (Just (Cluster _ coordinates)) ->
-            ( Game.mapBoard (Game.incrementClicksOnCluster coordinates) model, Cmd.none )
+            ( { model | game = Game.mapBoard (Game.incrementClicksOnCluster coordinates) model.game }, Cmd.none )
 
         ClickObstacle _ ->
             ( model, Cmd.none )
@@ -63,22 +69,29 @@ update msg model =
 ---- VIEW ----
 
 
+displayBoard : Int -> Game.Board -> Html Msg
+displayBoard index board =
+    div []
+        [ button [ onClick <| StartGame board ] [ text <| "Start game " ++ String.fromInt index ]
+        ]
+
+
 view : Model -> Html Msg
 view model =
-    case model of
+    case model.game of
         Game.NotStarted ->
-            div [] [ button [ onClick StartGame ] [ text "Start game" ] ]
+            div [] (List.indexedMap displayBoard model.boards)
 
         Game.Started board ->
             div []
-                [ h2 [] [ text <| "Clicks: " ++ (String.fromInt <| Game.clicksMade model) ]
+                [ h2 [] [ text <| "Clicks: " ++ (String.fromInt <| Game.clicksMade model.game) ]
                 , h2 [] [ text <| "Par: " ++ (String.fromInt <| Game.parForBoard board) ]
                 , renderBoard <| Game.renderableBoard board
                 ]
 
         Game.Complete board _ _ ->
             div []
-                [ h2 [] [ text <| "Complete! Clicks: " ++ (String.fromInt <| Game.clicksMade model) ]
+                [ h2 [] [ text <| "Complete! Clicks: " ++ (String.fromInt <| Game.clicksMade model.game) ]
                 , renderBoard <| Game.renderableBoard board
                 ]
 
@@ -141,7 +154,7 @@ main =
         , init = \_ -> init
         , update = update
         , subscriptions =
-            \game ->
+            \{ game } ->
                 if Game.isGameActive game then
                     Time.every 600 (always AdvanceBoard)
 
