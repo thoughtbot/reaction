@@ -430,7 +430,11 @@ initial =
         , Cluster (Size 1) (Coordinates (X 6) (Y 1))
         , Portal (Coordinates (X 0) (Y 3)) (Coordinates (X 6) (Y 3))
         , ChangeDirection Left (Coordinates (X 6) (Y 5))
+        , ChangeDirection Up (Coordinates (X 7) (Y 5))
+        , ChangeDirection Right (Coordinates (X 7) (Y 6))
+        , ChangeDirection Down (Coordinates (X 2) (Y 7))
         , BlackHole (Coordinates (X 4) (Y 3))
+        , Mirror (Coordinates (X 2) (Y 5))
         ]
         |> createParticle Up (Coordinates (X 4) (Y 0))
 

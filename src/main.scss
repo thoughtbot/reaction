@@ -45,11 +45,15 @@ td.black-hole {
 }
 
 td.change-direction {
-  background: yellow;
+  background-image: url('images/arrow.gif');
 }
 
+.change-direction-up { transform: rotate(90deg); }
+.change-direction-right { transform: rotate(180deg); }
+.change-direction-down { transform: rotate(270deg); }
+
 td.mirror {
-  background: blue;
+  background-image: url('images/reverse.gif');
 }
 
 td.cluster {
