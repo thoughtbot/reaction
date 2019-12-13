@@ -101,6 +101,9 @@ obstacleClass obstacle =
         BlackHole _ ->
             [ "black-hole" ]
 
+        Energizer _ ->
+            [ "energizer" ]
+
 
 renderBoard : List (List ( List Particle, Maybe Obstacle )) -> Html Msg
 renderBoard boardTiles =

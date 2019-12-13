@@ -61,6 +61,7 @@ type Obstacle
     | MirrorRight Coordinates
     | ChangeDirection Direction Coordinates
     | BlackHole Coordinates
+    | Energizer Coordinates
 
 
 type Direction
@@ -236,6 +237,9 @@ singleObstacleAtCoordinates coordinates obstacle =
         BlackHole coords ->
             coords == coordinates
 
+        Energizer coords ->
+            coords == coordinates
+
 
 advanceBoard : Board -> Board
 advanceBoard ((Board _ _ _ _ _ obstacles) as board) =
@@ -388,6 +392,27 @@ handleObstacle obstacle ((Board particleId clickCounter width height particles o
                     (particlesNotAtCoordinates particles coordinates)
                     (newObstacle :: List.filter (\o -> o /= obstacle) obstacles)
 
+        Energizer coordinates ->
+            let
+                particleDirections =
+                    List.map particleDirection <| particlesAtCoordinates particles coordinates
+
+                potentiallyFireReaction board_ =
+                    if List.isEmpty particleDirections then
+                        board_
+
+                    else
+                        List.foldl (\d b -> energizeAt coordinates d b) board_ particleDirections
+            in
+            Board
+                particleId
+                clickCounter
+                width
+                height
+                (particlesNotAtCoordinates particles coordinates)
+                obstacles
+                |> potentiallyFireReaction
+
         BlackHole coordinates ->
             Board particleId clickCounter width height (particlesNotAtCoordinates particles coordinates) obstacles
 
@@ -496,6 +521,7 @@ initial =
         -- , Mirror (Coordinates (X 2) (Y 5))
         , MirrorLeft (Coordinates (X 0) (Y 5))
         , MirrorRight (Coordinates (X 0) (Y 7))
+        , Energizer (Coordinates (X 2) (Y 4))
         ]
         |> createParticle Up (Coordinates (X 4) (Y 0))
 
@@ -507,6 +533,26 @@ reactionAt coordinates board =
         |> createParticle Down coordinates
         |> createParticle Left coordinates
         |> createParticle Right coordinates
+
+
+energizeAt : Coordinates -> Direction -> Board -> Board
+energizeAt coordinates direction board =
+    let
+        otherDirections =
+            case direction of
+                Up ->
+                    [ Right, Up, Left ]
+
+                Right ->
+                    [ Up, Right, Down ]
+
+                Left ->
+                    [ Up, Left, Down ]
+
+                Down ->
+                    [ Right, Left, Down ]
+    in
+    List.foldl (\d b -> createParticle d coordinates b) board otherDirections
 
 
 createParticle : Direction -> Coordinates -> Board -> Board
