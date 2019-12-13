@@ -127,7 +127,7 @@ intro animation: None
 par: 5
 d - - - 4 - mL- 
 - - - - - - - - 
-- 2 - - e - - w0 
+- 2 - - e - - w0
 r - - 4 - - 3 - 
 - - - - - - - - 
 - - - - - - 3 - 
@@ -194,9 +194,9 @@ par: 4
 - - - 2 - - 3 - 
 - u - 3 - - l - 
 intro animation: None 
-par: 4 
+par: 4
 3 - - - - - mL- 
-- w2- 2 - - - mL 
+- w2- 2 - - - mL
 - - - - - - - - 
 - - - - - - - - 
 - - - w1- - - - 
@@ -214,7 +214,7 @@ m w0- - d l 3 m
 m - - 4 3 3 u m 
 m b b b b b b m 
 intro animation: None 
-par: 5 
+par: 5
 mR- - 4 - - mL- 
 - - - - - - - - 
 3 - w2- 4 - w1- 
@@ -229,7 +229,7 @@ par: 5
 b - 4 - 4 e - - 
 w02 - 3 - 4 2 l 
 d w13 - 3 - m - 
-r 2 - 3 - 3 - w1 
+r 2 - 3 - 3 - w1
 - w0- 4 3 - 4 - 
 b m 2 e 3 3 2 - 
 b - 3 - m - - b 
@@ -287,9 +287,9 @@ intro animation: None
 par: 4
 4 - - - - e - 4 
 - - - - - - - - 
-- e 2 - - 3 2 -  
+- e 2 - - 3 2 - 
 - - - - - - - - 
-- - - - - - - -  
+- - - - - - - - 
 - 2 3 - - 2 e - 
 - - - - - - - - 
 4 - e - - - - 4 
@@ -302,24 +302,24 @@ mL- - - - - - 4
 mR- - - - mR- - 
 e - - 3 - - - - 
 4 - - 4 - - mR- 
-- - u - 4 - - w0 
+- - u - 4 - - w0
 intro animation: None
 par: 4
 w03 4 3 4 3 4 3 
 3 w3- - - - - 4 
-4 - w2- - - - 3  
+4 - w2- - - - 3 
 3 - - w1- - - 4 
-4 - - - w3- - 3  
+4 - - - w3- - 3 
 3 - - - - w0- 4 
 4 - - - - - w13 
-3 4 3 4 3 4 3 w2 
+3 4 3 4 3 4 3 w2
 intro animation: None
 par: 6
 r 4 - - 4 - 2 d 
 - r - d l - - - 
-3 - b - - b 3 -  
+3 - b - - b 3 - 
 - 3 b - 3 b - 4 
-4 - b 4 - b 4 2  
+4 - b 4 - b 4 2 
 - 4 b - - b - 4 
 u 3 2 3 u - 4 - 
 - u 4 - 4 - - l 
@@ -361,10 +361,10 @@ par: 5
 - 3 b - mL- - - 
 2 4 e - 4 - - 3 
 - 3 b - 3 - mL- 
-- 4 e - 3 - - mL 
+- 4 e - 3 - - mL
 2 3 - - 3 w0- - 
 intro animation: None 
-par: 3 
+par: 3
 - - 4 - - - mL- 
 r 3 - - - - - - 
 - - - - - - - - 
@@ -374,32 +374,32 @@ mL- - 4 - w2- 3
 - - - - - - - - 
 - - 3 - - 4 - mR
 intro animation: None 
-par: 4 
-mR- e w1- e - mL 
+par: 4
+mR- e w1- e - mL
 - - - - - - w24 
-- - 3 - - 3 - mL 
+- - 3 - - 3 - mL
 - - - - - - - - 
 4 - w2- - - - - 
-- - - - - 3 - mR 
+- - - - - 3 - mR
 - 2 - w1- - 2 - 
 mL- - 1 - - - mR
 intro animation: None 
-par: 5 
+par: 5
 - - 3 - - w1- - 
 - - - - - - - - 
-mR- - - - 3 - mL 
+mR- - - - 3 - mL
 - - - - - - - - 
 - - - - - - - - 
 u 4 - mLmR2 - - 
 - - - - - - - - 
 - - w13 3 b - 2 
 intro animation: None 
-par: 6 
+par: 6
 w3- - - - - - 3 
 - - - - - - - - 
 - 4 - w1- - w2- 
 - - - - - - - - 
-w1- - 1 4 - - w3 
+w1- - 1 4 - - w3
 - - - - - - - - 
 - 3 - - - - mR- 
 - - - w2- - - - 
@@ -424,24 +424,24 @@ b e - - - 4 - b
 e r - - - - 3 b 
 b b m b m b b b 
 intro animation: None 
-par: 5 
+par: 5
 4 - 4 - mLw2- - 
 b - b - - - - - 
-3 - - 2 - 3 - w1 
+3 - - 2 - 3 - w1
 - - - e - - - - 
 w1- - - e - - - 
 - - - - - 3 - 4 
 - - 3 - - b - b 
 - - w2mL- 4 - 4 
 intro animation: None
-par: 7 
-mR- 2 mLmR- 3 mL 
+par: 7
+mR- 2 mLmR- 3 mL
 - - - - - - - - 
 - - - 3 - - - - 
 - - 1 - e - - 1 
 - - - - - - - - 
 - 4 - 3 - 4 - - 
-- 3 - - - - 4 mR 
+- 3 - - - - 4 mR
 4 - - - mR- - - 
 intro animation: None
 par: 4
@@ -449,7 +449,7 @@ par: 4
 b - 4 - 4 e - - 
 w02 - 3 - 4 2 l 
 d w13 - 3 - m - 
-r 2 - 3 - 3 - w1 
+r 2 - 3 - 3 - w1
 - w0- 4 3 - 4 - 
 b m 2 e 3 3 2 - 
 b - 3 - m - - b 
@@ -532,7 +532,7 @@ mR3 - - - - 2 1
 - - b e e b - - 
 - - b b b b - - 
 4 3 - - - - mR- 
-2 4 - - - - - mR 
+2 4 - - - - - mR
 intro animation: None
 par: 11
 4 4 1 2 2 2 4 4 
@@ -587,7 +587,7 @@ intro animation: None
 par: 5
 3 - - 3 3 - - m 
 3 - - 3 3 - - m 
-3 - - 3 4 - - m  
+3 - - 3 4 - - m 
 3 - - m 1 - - 4 
 4 - - 1 m - - 3 
 m - - 4 3 - - 3 
@@ -775,14 +775,14 @@ b r - 1 - b - -
 - r - - - - u - 
 intro animation: None
 par: 9
-mR- 3 - - - - mL 
+mR- 3 - - - - mL
 - 3 w03 - 3 - - 
 - - 3 - 2 w13 2 
-- 3 - - - 2 3 w2 
+- 3 - - - 2 3 w2
 2 w12 - - 3 - 3 
 - 3 - - 3 w03 - 
 - - 3 - - 3 - - 
-mL3 w23 - - - mR 
+mL3 w23 - - - mR
 intro animation: None
 par: 13
 m 3 3 3 3 3 d b 
@@ -806,10 +806,10 @@ b b b b b b b b
 intro animation: None
 par: 9
 - 2 - - - - - l 
-- 2 - - - m 2 mR 
+- 2 - - - m 2 mR
 - 2 - - - - 2 - 
 - 3 - - - - 2 - 
-- 3 - - - m 2 mL 
+- 3 - - - m 2 mL
 - 3 - - - - - - 
 mRe - - - - 3 - 
 - mLl - 3 - l - 
@@ -855,7 +855,7 @@ b r 3 2 2 3 2 u
 b b r r r r r u 
 intro animation: None
 par: 11
-b - 3 - - - - mL 
+b - 3 - - - - mL
 - r - - - 3 - 3 
 - - 3 - l 2 - - 
 m 3 - - - - - b 
@@ -1177,7 +1177,7 @@ intro animation: None
 par: 15
 w01 2 w13 3 w93 
 3 w82 3 3 w23 2 
-w72 3 w33 3 1 w6 
+w72 3 w33 3 1 w6
 1 w13 2 3 w42 4 
 3 4 w51 w92 w33 
 4 w63 2 w03 1 2 
@@ -1373,10 +1373,9 @@ b 4 1 3 - 3 3 l
 1 - l 4 1 3 2 4 
 - b 4 3 2 - d - 
 1 - 4 - - 3 - m 
-
 intro animation: None
 par: 10
-mR- - - 2 - 4 mL 
+mR- - - 2 - 4 mL
 r - 2 2 3 2 mL3 
 m m m m m m 1 mR
 m w01 1 3 m 1 mL

@@ -4,6 +4,7 @@ module GameParser exposing
     , ParsedDirection(..)
     , ParsedObstacle(..)
     , parseBoard
+    , parseBoards
     )
 
 import Parser exposing (..)
@@ -36,16 +37,28 @@ type ParsedDirection
     | Left
 
 
+parseBoards : String -> Result String (List ParsedBoard)
+parseBoards input =
+    run boardsParser input
+        |> Result.mapError deadEndsToString
+
+
 parseBoard : String -> Result String ParsedBoard
 parseBoard input =
     run boardParser input
         |> Result.mapError deadEndsToString
 
 
+boardsParser : Parser (List ParsedBoard)
+boardsParser =
+    succeed identity
+       |. newlineParser
+       |= many boardParser
+
+
 boardParser : Parser ParsedBoard
 boardParser =
     succeed ParsedBoard
-        |. newlineParser
         |. animationParser
         |= parParser
         |= rowsParser
