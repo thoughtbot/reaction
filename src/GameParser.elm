@@ -97,8 +97,21 @@ obstacleParser =
             |. token "m "
         , succeed Portal
             |. token "w"
-            |= int
+            |= singleCharacterInt
         ]
+
+
+singleCharacterInt : Parser Int
+singleCharacterInt =
+    succeed ()
+        |. chompIf Char.isDigit
+        |> getChompedString
+        |> andThen
+            (\d ->
+                String.toInt d
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (problem "unable to parse")
+            )
 
 
 newlineParser : Parser ()
