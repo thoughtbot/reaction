@@ -49,7 +49,7 @@ nextBoard ({ game, boards } as model) =
             Nothing
 
         Just board ->
-            List.filter (\b -> Game.getBoardId b == Game.getBoardId board) boards
+            List.filter (\b -> Game.getBoardId b == Game.advanceBoardId board) boards
                 |> List.head
 
 

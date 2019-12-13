@@ -5,6 +5,7 @@ module Game exposing
     , Particle
     , Size(..)
     , advanceBoard
+    , advanceBoardId
     , clicksMade
     , completeGameWhenNoClustersRemain
     , getBoardId
@@ -97,6 +98,11 @@ type Y
 getBoardId : Board -> BoardId
 getBoardId (Board boardId _ _ _ _ _ _ _) =
     boardId
+
+
+advanceBoardId : Board -> BoardId
+advanceBoardId (Board (BoardId boardId) _ _ _ _ _ _ _) =
+    BoardId <| boardId + 1
 
 
 parForBoard : Board -> Int
