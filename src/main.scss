@@ -29,8 +29,9 @@ img {
   max-width: 200px;
 }
 
-table {
+table.board {
   border-collapse: collapse;
+  margin: 0 auto;
 }
 
 table tr td {
