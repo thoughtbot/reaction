@@ -72,10 +72,11 @@ view model =
         Game.Started board ->
             div []
                 [ h2 [] [ text <| "Clicks: " ++ (String.fromInt <| Game.clicksMade model) ]
+                , h2 [] [ text <| "Par: " ++ (String.fromInt <| Game.parForBoard board) ]
                 , renderBoard <| Game.renderableBoard board
                 ]
 
-        Game.Complete board _ ->
+        Game.Complete board _ _ ->
             div []
                 [ h2 [] [ text <| "Complete! Clicks: " ++ (String.fromInt <| Game.clicksMade model) ]
                 , renderBoard <| Game.renderableBoard board

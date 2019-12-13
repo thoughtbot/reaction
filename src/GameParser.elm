@@ -1,5 +1,6 @@
 module GameParser exposing
-    ( ParsedBoard(..)
+    ( Par(..)
+    , ParsedBoard(..)
     , ParsedDirection(..)
     , ParsedObstacle(..)
     , parseBoard
