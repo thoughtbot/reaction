@@ -112,9 +112,11 @@ view model =
 
         Game.Started board ->
             div []
-                [ h2 [] [ text <| "Clicks: " ++ (String.fromInt <| Game.clicksMade model.game) ]
+                [ h1 [] [ text <| Debug.toString <| Game.getBoardId board ]
+                , h2 [] [ text <| "Clicks: " ++ (String.fromInt <| Game.clicksMade model.game) ]
                 , h2 [] [ text <| "Par: " ++ (String.fromInt <| Game.parForBoard board) ]
                 , button [ onClick EndGame ] [ text "End game" ]
+                , nextBoardButton model
                 , renderBoard <| Game.renderableBoard board
                 ]
 

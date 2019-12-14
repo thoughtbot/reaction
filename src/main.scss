@@ -36,10 +36,12 @@ table.board {
 
 table tr td {
   width: 8vw;
+  position: relative;
   height: 8vw;
   padding: 0;
   margin: 0;
-  overflow: hidden;
+  z-index: 1;
+  // overflow: hidden;
   background-image: url('images/space.gif');
   background-size: 8vw;
   background-repeat: no-repeat;
@@ -153,14 +155,46 @@ td.cluster-4 {
 }
 
 .particle {
-  display: inline-block;
+  display: block;
+  position: absolute;
   background-image: url('images/projectile2.gif');
   background-size: 2vw;
   width: 2vw;
   height: 4vw;
+  left: 50%;
+  margin-left: -1vw;
+  top: 50%;
+  margin-top: -2vw;
 }
 
-.particle-up { transform: rotate(0deg); }
-.particle-left { transform: rotate(270deg); }
-.particle-right { transform: rotate(90deg); }
-.particle-down { transform: rotate(180deg); }
+$duration: 0.6s;
+$opacity: 0.2;
+
+.particle-up { transform: rotate(0deg); animation: slide-up $duration linear; }
+.particle-left { transform: rotate(270deg); animation: slide-left $duration linear; }
+.particle-right { transform: rotate(90deg); animation: slide-right $duration linear; }
+.particle-down { transform: rotate(180deg); animation: slide-down $duration linear; }
+
+@keyframes slide-down {
+  0% { top: 0; opacity: $opacity; }
+  50% { opacity: 1; }
+  100% { top: 100%; opacity: $opacity; }
+}
+
+@keyframes slide-right {
+  0% { left: 0; opacity: $opacity; }
+  50% { opacity: 1; }
+  100% { left: 100%; opacity: $opacity; }
+}
+
+@keyframes slide-left {
+  0% { left: 100%; opacity: $opacity; }
+  50% { opacity: 1; }
+  100% { left: 0; opacity: $opacity; }
+}
+
+@keyframes slide-up {
+  0% { top: 100%; opacity: $opacity; }
+  50% { opacity: 1; }
+  100% { top: 0; opacity: $opacity; }
+}
