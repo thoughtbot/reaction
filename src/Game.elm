@@ -42,7 +42,16 @@ type BoardId
 
 
 type Board
-    = Board BoardId ParticleId Par ClickCounter Width Height (List Particle) (List Obstacle)
+    = Board
+        { boardId : BoardId
+        , particleId : ParticleId
+        , par : Par
+        , clickCounter : ClickCounter
+        , width : Width
+        , height : Height
+        , particles : List Particle
+        , obstacles : List Obstacle
+        }
 
 
 type Width
@@ -96,31 +105,27 @@ type Y
 
 
 getBoardId : Board -> BoardId
-getBoardId (Board boardId _ _ _ _ _ _ _) =
+getBoardId (Board { boardId }) =
     boardId
 
 
-advanceBoardId : Board -> BoardId
-advanceBoardId (Board (BoardId boardId) _ _ _ _ _ _ _) =
-    BoardId <| boardId + 1
+advanceBoardId : BoardId -> BoardId
+advanceBoardId (BoardId bId) =
+    BoardId <| bId + 1
 
 
 parForBoard : Board -> Int
-parForBoard (Board _ _ (Par n) _ _ _ _ _) =
+parForBoard (Board { par }) =
+    let
+        (Par n) =
+            par
+    in
     n
 
 
 registerObstacle : Obstacle -> Board -> Board
-registerObstacle obstacle (Board boardId particleId par clickCounter width height particles obstacles) =
-    Board
-        boardId
-        particleId
-        par
-        clickCounter
-        width
-        height
-        particles
-        (obstacle :: obstacles)
+registerObstacle obstacle (Board ({ obstacles } as b)) =
+    Board { b | obstacles = obstacle :: obstacles }
 
 
 isGameActive : Game -> Bool
@@ -134,7 +139,7 @@ isGameActive game =
 
 
 boardContainsClusters : Board -> Bool
-boardContainsClusters (Board _ _ _ _ _ _ _ obstacles) =
+boardContainsClusters (Board { obstacles }) =
     List.any
         (\o ->
             case o of
@@ -150,7 +155,7 @@ boardContainsClusters (Board _ _ _ _ _ _ _ obstacles) =
 completeGameWhenNoClustersRemain : Game -> Game
 completeGameWhenNoClustersRemain game =
     case game of
-        Started ((Board _ _ par clickCounter _ _ _ _) as board) ->
+        Started ((Board { par, clickCounter }) as board) ->
             if boardContainsClusters board then
                 Started board
 
@@ -171,14 +176,29 @@ mapBoard f game =
             game
 
 
+clickCounterValue : ClickCounter -> Int
+clickCounterValue (ClickCounter value) =
+    value
+
+
+incrementClickCounter : ClickCounter -> ClickCounter
+incrementClickCounter (ClickCounter value) =
+    ClickCounter <| value + 1
+
+
+incrementParticleId : ParticleId -> ParticleId
+incrementParticleId (ParticleId value) =
+    ParticleId <| value + 1
+
+
 clicksMade : Game -> Int
 clicksMade game =
     case game of
         NotStarted ->
             0
 
-        Started (Board _ _ _ (ClickCounter n) _ _ _ _) ->
-            n
+        Started (Board { clickCounter }) ->
+            clickCounterValue clickCounter
 
         Complete _ _ (ClickCounter n) ->
             n
@@ -211,8 +231,14 @@ coordinatesFromPair ( x, y ) =
 
 
 renderableBoard : Board -> List (List ( List Particle, Maybe Obstacle ))
-renderableBoard (Board _ _ _ _ (Width w) (Height h) particles obstacles) =
+renderableBoard (Board { width, height, particles, obstacles }) =
     let
+        (Width w) =
+            width
+
+        (Height h) =
+            height
+
         tileInformation coordinates =
             ( particlesAtCoordinates particles coordinates, obstacleAtCoordinates obstacles coordinates )
 
@@ -229,21 +255,19 @@ renderableBoard (Board _ _ _ _ (Width w) (Height h) particles obstacles) =
 
 
 incrementClicksOnCluster : Coordinates -> Board -> Board
-incrementClicksOnCluster coordinates ((Board boardId particleId par (ClickCounter clicks) width height particles obstacles) as board) =
+incrementClicksOnCluster coordinates ((Board ({ obstacles, clickCounter } as b)) as board) =
     case obstacleAtCoordinates obstacles coordinates of
         Just ((Cluster (Size n) coords) as obstacle) ->
             let
                 newObstacle =
                     Cluster (Size <| n + 1) coords
             in
-            Board boardId
-                particleId
-                par
-                (ClickCounter <| clicks + 1)
-                width
-                height
-                particles
-                (newObstacle :: List.filter (\o -> o /= obstacle) obstacles)
+            Board
+                { b
+                    | clickCounter = incrementClickCounter clickCounter
+                    , obstacles =
+                        newObstacle :: List.filter (\o -> o /= obstacle) obstacles
+                }
 
         _ ->
             board
@@ -284,7 +308,7 @@ singleObstacleAtCoordinates coordinates obstacle =
 
 
 advanceBoard : Board -> Board
-advanceBoard ((Board _ _ _ _ _ _ _ obstacles) as board) =
+advanceBoard ((Board { obstacles }) as board) =
     List.foldl handleObstacle board obstacles
         |> advanceParticles
         |> trimParticles
@@ -403,7 +427,7 @@ increaseClusterSize increasedSize obstacle =
 
 
 handleObstacle : Obstacle -> Board -> Board
-handleObstacle obstacle ((Board boardId particleId par clickCounter width height particles obstacles) as board) =
+handleObstacle obstacle ((Board ({ particles, obstacles } as b)) as board) =
     case obstacle of
         Cluster (Size n) coordinates ->
             let
@@ -412,14 +436,12 @@ handleObstacle obstacle ((Board boardId particleId par clickCounter width height
             in
             if excess >= 0 then
                 Board
-                    boardId
-                    particleId
-                    par
-                    clickCounter
-                    width
-                    height
-                    (particlesNotAtCoordinates particles coordinates ++ List.take excess (particlesAtCoordinates particles coordinates))
-                    (List.filter (\o -> o /= obstacle) obstacles)
+                    { b
+                        | particles =
+                            particlesNotAtCoordinates particles coordinates ++ List.take excess (particlesAtCoordinates particles coordinates)
+                        , obstacles =
+                            List.filter (\o -> o /= obstacle) obstacles
+                    }
                     |> reactionAt coordinates
 
             else
@@ -429,14 +451,12 @@ handleObstacle obstacle ((Board boardId particleId par clickCounter width height
                             |> increaseClusterSize (List.length <| particlesAtCoordinates particles coordinates)
                 in
                 Board
-                    boardId
-                    particleId
-                    par
-                    clickCounter
-                    width
-                    height
-                    (particlesNotAtCoordinates particles coordinates)
-                    (newObstacle :: List.filter (\o -> o /= obstacle) obstacles)
+                    { b
+                        | particles =
+                            particlesNotAtCoordinates particles coordinates
+                        , obstacles =
+                            newObstacle :: List.filter (\o -> o /= obstacle) obstacles
+                    }
 
         Energizer coordinates ->
             let
@@ -448,65 +468,45 @@ handleObstacle obstacle ((Board boardId particleId par clickCounter width height
                         board_
 
                     else
-                        List.foldl (\d b -> energizeAt coordinates d b) board_ particleDirections
+                        List.foldl (\d b_ -> energizeAt coordinates d b_) board_ particleDirections
             in
             Board
-                boardId
-                particleId
-                par
-                clickCounter
-                width
-                height
-                (particlesNotAtCoordinates particles coordinates)
-                obstacles
+                { b
+                    | particles =
+                        particlesNotAtCoordinates particles coordinates
+                }
                 |> potentiallyFireReaction
 
         BlackHole coordinates ->
-            Board boardId particleId par clickCounter width height (particlesNotAtCoordinates particles coordinates) obstacles
+            Board { b | particles = particlesNotAtCoordinates particles coordinates }
 
         Mirror coordinates ->
             Board
-                boardId
-                particleId
-                par
-                clickCounter
-                width
-                height
-                (mapParticlesAtCoordinates (mapDirection reverseDirection) particles coordinates)
-                obstacles
+                { b
+                    | particles =
+                        mapParticlesAtCoordinates (mapDirection reverseDirection) particles coordinates
+                }
 
         MirrorLeft coordinates ->
             Board
-                boardId
-                particleId
-                par
-                clickCounter
-                width
-                height
-                (mapParticlesAtCoordinates (mapDirection mirrorLeftDirection) particles coordinates)
-                obstacles
+                { b
+                    | particles =
+                        mapParticlesAtCoordinates (mapDirection mirrorLeftDirection) particles coordinates
+                }
 
         MirrorRight coordinates ->
             Board
-                boardId
-                particleId
-                par
-                clickCounter
-                width
-                height
-                (mapParticlesAtCoordinates (mapDirection mirrorRightDirection) particles coordinates)
-                obstacles
+                { b
+                    | particles =
+                        mapParticlesAtCoordinates (mapDirection mirrorRightDirection) particles coordinates
+                }
 
         ChangeDirection newDirection coordinates ->
             Board
-                boardId
-                particleId
-                par
-                clickCounter
-                width
-                height
-                (mapParticlesAtCoordinates (mapDirection (always newDirection)) particles coordinates)
-                obstacles
+                { b
+                    | particles =
+                        mapParticlesAtCoordinates (mapDirection (always newDirection)) particles coordinates
+                }
 
         Portal coordinates1 coordinates2 ->
             let
@@ -519,28 +519,24 @@ handleObstacle obstacle ((Board boardId particleId par clickCounter width height
                         |> List.map (mapCoordinates (always coordinates2))
             in
             Board
-                boardId
-                particleId
-                par
-                clickCounter
-                width
-                height
-                (particlesNotAtAnyCoordinates particles [ coordinates1, coordinates2 ] ++ particlesAtCoordinates1 ++ particlesAtCoordinates2)
-                obstacles
+                { b
+                    | particles =
+                        particlesNotAtAnyCoordinates particles [ coordinates1, coordinates2 ] ++ particlesAtCoordinates1 ++ particlesAtCoordinates2
+                }
 
 
 advanceParticles : Board -> Board
-advanceParticles (Board boardId particleId par clickCounter width height particles obstacles) =
-    Board boardId particleId par clickCounter width height (List.map advanceParticle particles) obstacles
+advanceParticles (Board ({ particles } as b)) =
+    Board { b | particles = List.map advanceParticle particles }
 
 
 trimParticles : Board -> Board
-trimParticles (Board boardId particleId par clickCounter width height particles obstacles) =
+trimParticles (Board ({ width, height, particles, obstacles } as b)) =
     let
         particleWithinBounds (Width w) (Height h) (Particle _ _ (Coordinates (X x) (Y y))) =
             List.member x (List.range 0 (w - 1)) && List.member y (List.range 0 (h - 1))
     in
-    Board boardId particleId par clickCounter width height (List.filter (particleWithinBounds width height) particles) obstacles
+    Board { b | particles = List.filter (particleWithinBounds width height) particles }
 
 
 advanceParticle : Particle -> Particle
@@ -589,12 +585,16 @@ energizeAt coordinates direction board =
 
 
 createParticle : Direction -> Coordinates -> Board -> Board
-createParticle direction coordinates (Board boardId (ParticleId particleId) par clickCounter width height particles obstacles) =
+createParticle direction coordinates (Board ({ particleId, particles } as b)) =
     let
         newParticle =
-            Particle (ParticleId particleId) direction coordinates
+            Particle particleId direction coordinates
     in
-    Board boardId (ParticleId <| particleId + 1) par clickCounter width height (newParticle :: particles) obstacles
+    Board
+        { b
+            | particleId = incrementParticleId particleId
+            , particles = newParticle :: particles
+        }
 
 
 initialParticleId : ParticleId
@@ -727,12 +727,14 @@ parsedBoardToBoard boardId parsedBoard =
                             )
                             cleanedRows
     in
-    Board (BoardId boardId)
-        initialParticleId
-        (Par par)
-        (ClickCounter 0)
-        (Width width)
-        (Height height)
-        []
-        []
+    Board
+        { boardId = BoardId boardId
+        , particleId = initialParticleId
+        , par = Par par
+        , clickCounter = ClickCounter 0
+        , width = Width width
+        , height = Height height
+        , particles = []
+        , obstacles = []
+        }
         |> (\board -> List.foldl (\o b -> registerObstacle o b) board obstaclesToAdd)
