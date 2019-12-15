@@ -332,4 +332,4 @@ parsedBoardToBoard boardId parsedBoard =
         , particles = Particle.initial
         , obstacles = []
         }
-        |> (\board -> List.foldl (\o b -> registerObstacle o b) board obstaclesToAdd)
+        |> (\board -> List.foldl registerObstacle board obstaclesToAdd)
