@@ -2,7 +2,6 @@ module Game exposing
     ( Board
     , Game(..)
     , Obstacle(..)
-    , Particle
     , Size(..)
     , advanceBoard
     , advanceBoardId
@@ -14,7 +13,6 @@ module Game exposing
     , loadBoards
     , mapBoard
     , parForBoard
-    , particleDirection
     , renderableBoard
     )
 
@@ -22,6 +20,7 @@ import Coordinates exposing (..)
 import Direction exposing (..)
 import GameParser exposing (ParsedBoard(..))
 import List.Extra as List
+import Particle exposing (..)
 
 
 type ClickCounter
@@ -53,14 +52,6 @@ type Board
         , particles : List Particle
         , obstacles : List Obstacle
         }
-
-
-type ParticleId
-    = ParticleId Int
-
-
-type Particle
-    = Particle ParticleId Direction Coordinates
 
 
 type Size
@@ -160,11 +151,6 @@ incrementClickCounter (ClickCounter value) =
     ClickCounter <| value + 1
 
 
-incrementParticleId : ParticleId -> ParticleId
-incrementParticleId (ParticleId value) =
-    ParticleId <| value + 1
-
-
 clicksMade : Game -> Int
 clicksMade game =
     case game of
@@ -176,11 +162,6 @@ clicksMade game =
 
         Complete _ _ (ClickCounter n) ->
             n
-
-
-particleDirection : Particle -> Direction
-particleDirection (Particle _ direction _) =
-    direction
 
 
 renderableBoard : Board -> List (List ( List Particle, Maybe Obstacle ))
@@ -260,53 +241,6 @@ advanceBoard ((Board { obstacles }) as board) =
 -- for each obstacle, check if there's overlap
 -- if there is, do whatever we need to do to each particle overlapping with the obstacle
 --   and also do whatever we need to do with the obstacle
-
-
-particleAtCoordinates : Coordinates -> Particle -> Bool
-particleAtCoordinates coords (Particle _ _ particleCoords) =
-    coords == particleCoords
-
-
-particlesAtCoordinates : List Particle -> Coordinates -> List Particle
-particlesAtCoordinates particles coordinates =
-    List.filter (particleAtCoordinates coordinates) particles
-
-
-particlesNotAtCoordinates : List Particle -> Coordinates -> List Particle
-particlesNotAtCoordinates particles coordinates =
-    List.filter (not << particleAtCoordinates coordinates) particles
-
-
-particlesNotAtAnyCoordinates : List Particle -> List Coordinates -> List Particle
-particlesNotAtAnyCoordinates particles coordinatesList =
-    List.filter
-        (\(Particle _ _ coordinates) ->
-            not <| List.member coordinates coordinatesList
-        )
-        particles
-
-
-mapParticlesAtCoordinates : (Particle -> Particle) -> List Particle -> Coordinates -> List Particle
-mapParticlesAtCoordinates f particles coordinates =
-    List.map
-        (\particle ->
-            if particleAtCoordinates coordinates particle then
-                f particle
-
-            else
-                particle
-        )
-        particles
-
-
-mapCoordinates : (Coordinates -> Coordinates) -> Particle -> Particle
-mapCoordinates f (Particle particleId direction coordinates) =
-    Particle particleId direction (f coordinates)
-
-
-mapDirection : (Direction -> Direction) -> Particle -> Particle
-mapDirection f (Particle particleId direction coordinates) =
-    Particle particleId (f direction) coordinates
 
 
 increaseClusterSize : Int -> Obstacle -> Obstacle
@@ -420,21 +354,12 @@ handleObstacle obstacle ((Board ({ particles, obstacles } as b)) as board) =
 
 advanceParticles : Board -> Board
 advanceParticles (Board ({ particles } as b)) =
-    Board { b | particles = List.map advanceParticle particles }
+    Board { b | particles = Particle.advanceParticles particles }
 
 
 trimParticles : Board -> Board
-trimParticles (Board ({ width, height, particles, obstacles } as b)) =
-    let
-        particleCoordinates (Particle _ _ coordinates) =
-            coordinates
-    in
-    Board { b | particles = List.filter (coordinatesWithinDimensions width height << particleCoordinates) particles }
-
-
-advanceParticle : Particle -> Particle
-advanceParticle (Particle particleId direction coordinates) =
-    Particle particleId direction (advanceCoordinatesInDirection direction coordinates)
+trimParticles (Board ({ width, height, particles } as b)) =
+    Board { b | particles = particlesWithinDimensions width height particles }
 
 
 reactionAt : Coordinates -> Board -> Board
@@ -451,18 +376,13 @@ createParticle : Coordinates -> Direction -> Board -> Board
 createParticle coordinates direction (Board ({ particleId, particles } as b)) =
     let
         newParticle =
-            Particle particleId direction coordinates
+            buildParticle particleId direction coordinates
     in
     Board
         { b
             | particleId = incrementParticleId particleId
             , particles = newParticle :: particles
         }
-
-
-initialParticleId : ParticleId
-initialParticleId =
-    ParticleId 1
 
 
 loadBoards : String -> List Board

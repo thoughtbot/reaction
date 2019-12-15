@@ -2,12 +2,13 @@ module Main exposing (..)
 
 import Browser
 import Direction
-import Game exposing (Obstacle(..), Particle, Size(..))
+import Game exposing (Obstacle(..), Size(..))
 import GameParser
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, src)
 import Html.Events exposing (onClick)
 import Levels
+import Particle exposing (Particle)
 import Time
 
 
@@ -180,7 +181,7 @@ renderBoard boardTiles =
                 [ span [] (List.map showParticle particles) ]
 
         showParticle particle =
-            span [ class <| "particle particle-" ++ (Direction.showDirection <| Game.particleDirection particle) ] []
+            span [ class <| "particle particle-" ++ (Direction.showDirection <| Particle.particleDirection particle) ] []
     in
     table [ class "board" ] (List.map renderRow boardTiles)
 
