@@ -16,10 +16,10 @@ module Game exposing
     , parForBoard
     , particleDirection
     , renderableBoard
-    , showDirection
     )
 
 import Coordinates exposing (..)
+import Direction exposing (..)
 import GameParser exposing (ParsedBoard(..))
 import List.Extra as List
 
@@ -76,13 +76,6 @@ type Obstacle
     | ChangeDirection Direction Coordinates
     | BlackHole Coordinates
     | Energizer Coordinates
-
-
-type Direction
-    = Up
-    | Down
-    | Left
-    | Right
 
 
 getBoardId : Board -> BoardId
@@ -183,22 +176,6 @@ clicksMade game =
 
         Complete _ _ (ClickCounter n) ->
             n
-
-
-showDirection : Direction -> String
-showDirection direction =
-    case direction of
-        Up ->
-            "up"
-
-        Down ->
-            "down"
-
-        Left ->
-            "left"
-
-        Right ->
-            "right"
 
 
 particleDirection : Particle -> Direction
@@ -332,54 +309,6 @@ mapDirection f (Particle particleId direction coordinates) =
     Particle particleId (f direction) coordinates
 
 
-reverseDirection : Direction -> Direction
-reverseDirection direction =
-    case direction of
-        Up ->
-            Down
-
-        Down ->
-            Up
-
-        Left ->
-            Right
-
-        Right ->
-            Left
-
-
-mirrorLeftDirection : Direction -> Direction
-mirrorLeftDirection direction =
-    case direction of
-        Up ->
-            Left
-
-        Down ->
-            Right
-
-        Left ->
-            Up
-
-        Right ->
-            Down
-
-
-mirrorRightDirection : Direction -> Direction
-mirrorRightDirection direction =
-    case direction of
-        Up ->
-            Right
-
-        Down ->
-            Left
-
-        Left ->
-            Down
-
-        Right ->
-            Up
-
-
 increaseClusterSize : Int -> Obstacle -> Obstacle
 increaseClusterSize increasedSize obstacle =
     case obstacle of
@@ -505,51 +434,21 @@ trimParticles (Board ({ width, height, particles, obstacles } as b)) =
 
 advanceParticle : Particle -> Particle
 advanceParticle (Particle particleId direction coordinates) =
-    case direction of
-        Up ->
-            Particle particleId direction (mapY ((+) 1) coordinates)
-
-        Down ->
-            Particle particleId direction (mapY (\y -> y - 1) coordinates)
-
-        Left ->
-            Particle particleId direction (mapX (\x -> x - 1) coordinates)
-
-        Right ->
-            Particle particleId direction (mapX ((+) 1) coordinates)
+    Particle particleId direction (advanceCoordinatesInDirection direction coordinates)
 
 
 reactionAt : Coordinates -> Board -> Board
 reactionAt coordinates board =
-    board
-        |> createParticle Up coordinates
-        |> createParticle Down coordinates
-        |> createParticle Left coordinates
-        |> createParticle Right coordinates
+    List.foldl (createParticle coordinates) board allDirections
 
 
 energizeAt : Coordinates -> Direction -> Board -> Board
 energizeAt coordinates direction board =
-    let
-        otherDirections =
-            case direction of
-                Up ->
-                    [ Right, Up, Left ]
-
-                Right ->
-                    [ Up, Right, Down ]
-
-                Left ->
-                    [ Up, Left, Down ]
-
-                Down ->
-                    [ Right, Left, Down ]
-    in
-    List.foldl (\d b -> createParticle d coordinates b) board otherDirections
+    List.foldl (\d b -> createParticle coordinates d b) board (sidewaysDirections direction)
 
 
-createParticle : Direction -> Coordinates -> Board -> Board
-createParticle direction coordinates (Board ({ particleId, particles } as b)) =
+createParticle : Coordinates -> Direction -> Board -> Board
+createParticle coordinates direction (Board ({ particleId, particles } as b)) =
     let
         newParticle =
             Particle particleId direction coordinates
@@ -630,17 +529,8 @@ parseObstacle coordinates parsedObstacle =
         GameParser.Cluster size ->
             Just <| Cluster (Size size) coordinates
 
-        GameParser.ChangeDirection GameParser.Up ->
-            Just <| ChangeDirection Up coordinates
-
-        GameParser.ChangeDirection GameParser.Down ->
-            Just <| ChangeDirection Down coordinates
-
-        GameParser.ChangeDirection GameParser.Left ->
-            Just <| ChangeDirection Left coordinates
-
-        GameParser.ChangeDirection GameParser.Right ->
-            Just <| ChangeDirection Right coordinates
+        GameParser.ChangeDirection direction ->
+            Just <| ChangeDirection direction coordinates
 
         GameParser.BlackHole ->
             Just <| BlackHole coordinates

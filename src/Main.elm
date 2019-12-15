@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Browser
+import Direction
 import Game exposing (Obstacle(..), Particle, Size(..))
 import GameParser
 import Html exposing (..)
@@ -156,7 +157,7 @@ obstacleClass obstacle =
             [ "mirror-right" ]
 
         ChangeDirection direction _ ->
-            [ "change-direction", "change-direction-" ++ Game.showDirection direction ]
+            [ "change-direction", "change-direction-" ++ Direction.showDirection direction ]
 
         BlackHole _ ->
             [ "black-hole" ]
@@ -179,7 +180,7 @@ renderBoard boardTiles =
                 [ span [] (List.map showParticle particles) ]
 
         showParticle particle =
-            span [ class <| "particle particle-" ++ (Game.showDirection <| Game.particleDirection particle) ] []
+            span [ class <| "particle particle-" ++ (Direction.showDirection <| Game.particleDirection particle) ] []
     in
     table [ class "board" ] (List.map renderRow boardTiles)
 

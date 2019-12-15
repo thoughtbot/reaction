@@ -1,12 +1,12 @@
 module GameParser exposing
     ( Par(..)
     , ParsedBoard(..)
-    , ParsedDirection(..)
     , ParsedObstacle(..)
     , parseBoard
     , parseBoards
     )
 
+import Direction exposing (Direction(..))
 import Parser exposing (..)
 
 
@@ -20,7 +20,7 @@ type ParsedBoard
 
 type ParsedObstacle
     = Cluster Int
-    | ChangeDirection ParsedDirection
+    | ChangeDirection Direction
     | Portal Int
     | BlackHole
     | Energizer
@@ -28,13 +28,6 @@ type ParsedObstacle
     | MirrorLeft
     | MirrorRight
     | Empty
-
-
-type ParsedDirection
-    = Up
-    | Right
-    | Down
-    | Left
 
 
 parseBoards : String -> Result String (List ParsedBoard)
@@ -52,8 +45,8 @@ parseBoard input =
 boardsParser : Parser (List ParsedBoard)
 boardsParser =
     succeed identity
-       |. newlineParser
-       |= many boardParser
+        |. newlineParser
+        |= many boardParser
 
 
 boardParser : Parser ParsedBoard
