@@ -19,6 +19,7 @@ module Game exposing
     , showDirection
     )
 
+import Coordinates exposing (..)
 import GameParser exposing (ParsedBoard(..))
 import List.Extra as List
 
@@ -54,14 +55,6 @@ type Board
         }
 
 
-type Width
-    = Width Int
-
-
-type Height
-    = Height Int
-
-
 type ParticleId
     = ParticleId Int
 
@@ -90,18 +83,6 @@ type Direction
     | Down
     | Left
     | Right
-
-
-type Coordinates
-    = Coordinates X Y
-
-
-type X
-    = X Int
-
-
-type Y
-    = Y Int
 
 
 getBoardId : Board -> BoardId
@@ -225,31 +206,14 @@ particleDirection (Particle _ direction _) =
     direction
 
 
-coordinatesFromPair : ( Int, Int ) -> Coordinates
-coordinatesFromPair ( x, y ) =
-    Coordinates (X x) (Y y)
-
-
 renderableBoard : Board -> List (List ( List Particle, Maybe Obstacle ))
 renderableBoard (Board { width, height, particles, obstacles }) =
     let
-        (Width w) =
-            width
-
-        (Height h) =
-            height
-
         tileInformation coordinates =
             ( particlesAtCoordinates particles coordinates, obstacleAtCoordinates obstacles coordinates )
 
-        xs =
-            List.range 0 (w - 1)
-
-        ys =
-            List.range 0 (h - 1)
-
         allCoordinates =
-            List.reverse <| List.map (\y -> List.map (\x -> coordinatesFromPair ( x, y )) xs) ys
+            dimensionsToCoordinates width height
     in
     List.map (List.map tileInformation) allCoordinates
 
@@ -533,26 +497,26 @@ advanceParticles (Board ({ particles } as b)) =
 trimParticles : Board -> Board
 trimParticles (Board ({ width, height, particles, obstacles } as b)) =
     let
-        particleWithinBounds (Width w) (Height h) (Particle _ _ (Coordinates (X x) (Y y))) =
-            List.member x (List.range 0 (w - 1)) && List.member y (List.range 0 (h - 1))
+        particleCoordinates (Particle _ _ coordinates) =
+            coordinates
     in
-    Board { b | particles = List.filter (particleWithinBounds width height) particles }
+    Board { b | particles = List.filter (coordinatesWithinDimensions width height << particleCoordinates) particles }
 
 
 advanceParticle : Particle -> Particle
-advanceParticle (Particle particleId direction (Coordinates (X x) (Y y))) =
+advanceParticle (Particle particleId direction coordinates) =
     case direction of
         Up ->
-            Particle particleId direction (Coordinates (X x) (Y <| y + 1))
+            Particle particleId direction (mapY ((+) 1) coordinates)
 
         Down ->
-            Particle particleId direction (Coordinates (X x) (Y <| y - 1))
+            Particle particleId direction (mapY (\y -> y - 1) coordinates)
 
         Left ->
-            Particle particleId direction (Coordinates (X <| x - 1) (Y y))
+            Particle particleId direction (mapX (\x -> x - 1) coordinates)
 
         Right ->
-            Particle particleId direction (Coordinates (X <| x + 1) (Y y))
+            Particle particleId direction (mapX ((+) 1) coordinates)
 
 
 reactionAt : Coordinates -> Board -> Board
@@ -732,8 +696,8 @@ parsedBoardToBoard boardId parsedBoard =
         , particleId = initialParticleId
         , par = Par par
         , clickCounter = ClickCounter 0
-        , width = Width width
-        , height = Height height
+        , width = buildWidth width
+        , height = buildHeight height
         , particles = []
         , obstacles = []
         }
