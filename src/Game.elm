@@ -266,10 +266,10 @@ handleObstacle obstacle ((Board ({ particles, obstacles } as b)) as board) =
                         | particles =
                             particlesNotAtCoordinates particles coordinates
                                 |> Particle.mappend (Particle.take excess (particlesAtCoordinates particles coordinates))
+                                |> reactionAt coordinates
                         , obstacles =
                             List.filter (\o -> o /= obstacle) obstacles
                     }
-                    |> reactionAt coordinates
 
             else
                 let
@@ -290,19 +290,19 @@ handleObstacle obstacle ((Board ({ particles, obstacles } as b)) as board) =
                 particleDirections =
                     List.map particleDirection <| Particle.extract <| particlesAtCoordinates particles coordinates
 
-                potentiallyFireReaction board_ =
+                potentiallyFireReaction ps =
                     if List.isEmpty particleDirections then
-                        board_
+                        ps
 
                     else
-                        List.foldl (\d b_ -> energizeAt coordinates d b_) board_ particleDirections
+                        List.foldl (energizeAt coordinates) ps particleDirections
             in
             Board
                 { b
                     | particles =
                         particlesNotAtCoordinates particles coordinates
+                            |> potentiallyFireReaction
                 }
-                |> potentiallyFireReaction
 
         BlackHole coordinates ->
             Board { b | particles = particlesNotAtCoordinates particles coordinates }
@@ -364,22 +364,14 @@ trimParticles (Board ({ width, height, particles } as b)) =
     Board { b | particles = particlesWithinDimensions width height particles }
 
 
-reactionAt : Coordinates -> Board -> Board
-reactionAt coordinates board =
-    List.foldl (createParticle coordinates) board allDirections
+reactionAt : Coordinates -> Particles -> Particles
+reactionAt coordinates particles =
+    List.foldl (buildParticle coordinates) particles allDirections
 
 
-energizeAt : Coordinates -> Direction -> Board -> Board
-energizeAt coordinates direction board =
-    List.foldl (\d b -> createParticle coordinates d b) board (sidewaysDirections direction)
-
-
-createParticle : Coordinates -> Direction -> Board -> Board
-createParticle coordinates direction (Board ({ particles } as b)) =
-    Board
-        { b
-            | particles = buildParticle direction coordinates particles
-        }
+energizeAt : Coordinates -> Direction -> Particles -> Particles
+energizeAt coordinates direction particles =
+    List.foldl (buildParticle coordinates) particles (sidewaysDirections direction)
 
 
 loadBoards : String -> List Board

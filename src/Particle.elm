@@ -70,8 +70,8 @@ advanceParticle ((Particle _ direction _) as particle) =
     mapCoordinates (advanceCoordinatesInDirection direction) particle
 
 
-buildParticle : Direction -> Coordinates -> Particles -> Particles
-buildParticle direction coordinates (Particles { particleId, particles }) =
+buildParticle : Coordinates -> Direction -> Particles -> Particles
+buildParticle coordinates direction (Particles { particleId, particles }) =
     let
         newParticle =
             Particle particleId direction coordinates
