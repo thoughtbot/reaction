@@ -44,12 +44,11 @@ type BoardId
 type Board
     = Board
         { boardId : BoardId
-        , particleId : ParticleId
         , par : Par
         , clickCounter : ClickCounter
         , width : Width
         , height : Height
-        , particles : List Particle
+        , particles : Particles
         , obstacles : List Obstacle
         }
 
@@ -168,7 +167,7 @@ renderableBoard : Board -> List (List ( List Particle, Maybe Obstacle ))
 renderableBoard (Board { width, height, particles, obstacles }) =
     let
         tileInformation coordinates =
-            ( particlesAtCoordinates particles coordinates, obstacleAtCoordinates obstacles coordinates )
+            ( Particle.extract <| particlesAtCoordinates particles coordinates, obstacleAtCoordinates obstacles coordinates )
 
         allCoordinates =
             dimensionsToCoordinates width height
@@ -259,13 +258,14 @@ handleObstacle obstacle ((Board ({ particles, obstacles } as b)) as board) =
         Cluster (Size n) coordinates ->
             let
                 excess =
-                    List.length (particlesAtCoordinates particles coordinates) + n - 5
+                    Particle.length (particlesAtCoordinates particles coordinates) + n - 5
             in
             if excess >= 0 then
                 Board
                     { b
                         | particles =
-                            particlesNotAtCoordinates particles coordinates ++ List.take excess (particlesAtCoordinates particles coordinates)
+                            particlesNotAtCoordinates particles coordinates
+                                |> Particle.mappend (Particle.take excess (particlesAtCoordinates particles coordinates))
                         , obstacles =
                             List.filter (\o -> o /= obstacle) obstacles
                     }
@@ -275,7 +275,7 @@ handleObstacle obstacle ((Board ({ particles, obstacles } as b)) as board) =
                 let
                     newObstacle =
                         obstacle
-                            |> increaseClusterSize (List.length <| particlesAtCoordinates particles coordinates)
+                            |> increaseClusterSize (Particle.length <| particlesAtCoordinates particles coordinates)
                 in
                 Board
                     { b
@@ -288,7 +288,7 @@ handleObstacle obstacle ((Board ({ particles, obstacles } as b)) as board) =
         Energizer coordinates ->
             let
                 particleDirections =
-                    List.map particleDirection <| particlesAtCoordinates particles coordinates
+                    List.map particleDirection <| Particle.extract <| particlesAtCoordinates particles coordinates
 
                 potentiallyFireReaction board_ =
                     if List.isEmpty particleDirections then
@@ -339,16 +339,18 @@ handleObstacle obstacle ((Board ({ particles, obstacles } as b)) as board) =
             let
                 particlesAtCoordinates1 =
                     particlesAtCoordinates particles coordinates2
-                        |> List.map (mapCoordinates (always coordinates1))
+                        |> Particle.map (mapCoordinates (always coordinates1))
 
                 particlesAtCoordinates2 =
                     particlesAtCoordinates particles coordinates1
-                        |> List.map (mapCoordinates (always coordinates2))
+                        |> Particle.map (mapCoordinates (always coordinates2))
             in
             Board
                 { b
                     | particles =
-                        particlesNotAtAnyCoordinates particles [ coordinates1, coordinates2 ] ++ particlesAtCoordinates1 ++ particlesAtCoordinates2
+                        particlesNotAtAnyCoordinates particles [ coordinates1, coordinates2 ]
+                            |> Particle.mappend particlesAtCoordinates1
+                            |> Particle.mappend particlesAtCoordinates2
                 }
 
 
@@ -373,15 +375,10 @@ energizeAt coordinates direction board =
 
 
 createParticle : Coordinates -> Direction -> Board -> Board
-createParticle coordinates direction (Board ({ particleId, particles } as b)) =
-    let
-        newParticle =
-            buildParticle particleId direction coordinates
-    in
+createParticle coordinates direction (Board ({ particles } as b)) =
     Board
         { b
-            | particleId = incrementParticleId particleId
-            , particles = newParticle :: particles
+            | particles = buildParticle direction coordinates particles
         }
 
 
@@ -503,12 +500,11 @@ parsedBoardToBoard boardId parsedBoard =
     in
     Board
         { boardId = BoardId boardId
-        , particleId = initialParticleId
         , par = Par par
         , clickCounter = ClickCounter 0
         , width = buildWidth width
         , height = buildHeight height
-        , particles = []
+        , particles = Particle.initial
         , obstacles = []
         }
         |> (\board -> List.foldl (\o b -> registerObstacle o b) board obstaclesToAdd)

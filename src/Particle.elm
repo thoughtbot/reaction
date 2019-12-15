@@ -1,19 +1,24 @@
 module Particle exposing
     ( Particle
     , ParticleId
+    , Particles
     , advanceParticles
     , buildParticle
-    , incrementParticleId
-    , initialParticleId
+    , extract
+    , initial
+    , length
+    , map
     , mapCoordinates
     , mapDirection
     , mapParticlesAtCoordinates
+    , mappend
     , particleCoordinates
     , particleDirection
     , particlesAtCoordinates
     , particlesNotAtAnyCoordinates
     , particlesNotAtCoordinates
     , particlesWithinDimensions
+    , take
     )
 
 import Coordinates exposing (Coordinates, Height, Width, coordinatesWithinDimensions)
@@ -28,19 +33,66 @@ type Particle
     = Particle ParticleId Direction Coordinates
 
 
+type Particles
+    = Particles
+        { particleId : ParticleId
+        , particles : List Particle
+        }
+
+
+map : (Particle -> Particle) -> Particles -> Particles
+map f (Particles ({ particles } as p)) =
+    Particles { p | particles = List.map f particles }
+
+
+extract : Particles -> List Particle
+extract (Particles { particles }) =
+    particles
+
+
+take : Int -> Particles -> Particles
+take n =
+    flatMap (List.take n)
+
+
+mappend : Particles -> Particles -> Particles
+mappend (Particles p1) (Particles ({ particles } as p)) =
+    Particles { p | particles = particles ++ p1.particles }
+
+
+length : Particles -> Int
+length =
+    List.length << extract
+
+
 advanceParticle : Particle -> Particle
-advanceParticle (Particle particleId direction coordinates) =
-    Particle particleId direction (advanceCoordinatesInDirection direction coordinates)
+advanceParticle ((Particle _ direction _) as particle) =
+    mapCoordinates (advanceCoordinatesInDirection direction) particle
 
 
-buildParticle : ParticleId -> Direction -> Coordinates -> Particle
-buildParticle =
-    Particle
+buildParticle : Direction -> Coordinates -> Particles -> Particles
+buildParticle direction coordinates (Particles { particleId, particles }) =
+    let
+        newParticle =
+            Particle particleId direction coordinates
+    in
+    Particles
+        { particleId = incrementParticleId particleId
+        , particles = newParticle :: particles
+        }
 
 
 incrementParticleId : ParticleId -> ParticleId
 incrementParticleId (ParticleId value) =
     ParticleId <| value + 1
+
+
+initial : Particles
+initial =
+    Particles
+        { particleId = initialParticleId
+        , particles = []
+        }
 
 
 initialParticleId : ParticleId
@@ -63,36 +115,40 @@ particleAtCoordinates coords (Particle _ _ particleCoords) =
     coords == particleCoords
 
 
-particlesAtCoordinates : List Particle -> Coordinates -> List Particle
+particlesAtCoordinates : Particles -> Coordinates -> Particles
 particlesAtCoordinates particles coordinates =
-    List.filter (particleAtCoordinates coordinates) particles
+    particles
+        |> flatMap (List.filter (particleAtCoordinates coordinates))
 
 
-particlesNotAtCoordinates : List Particle -> Coordinates -> List Particle
+particlesNotAtCoordinates : Particles -> Coordinates -> Particles
 particlesNotAtCoordinates particles coordinates =
-    List.filter (not << particleAtCoordinates coordinates) particles
+    particles
+        |> flatMap (List.filter (not << particleAtCoordinates coordinates))
 
 
-particlesNotAtAnyCoordinates : List Particle -> List Coordinates -> List Particle
+particlesNotAtAnyCoordinates : Particles -> List Coordinates -> Particles
 particlesNotAtAnyCoordinates particles coordinatesList =
-    List.filter
-        (\(Particle _ _ coordinates) ->
-            not <| List.member coordinates coordinatesList
-        )
-        particles
+    particles
+        |> flatMap
+            (List.filter
+                (\(Particle _ _ coordinates) ->
+                    not <| List.member coordinates coordinatesList
+                )
+            )
 
 
-mapParticlesAtCoordinates : (Particle -> Particle) -> List Particle -> Coordinates -> List Particle
+mapParticlesAtCoordinates : (Particle -> Particle) -> Particles -> Coordinates -> Particles
 mapParticlesAtCoordinates f particles coordinates =
-    List.map
-        (\particle ->
-            if particleAtCoordinates coordinates particle then
-                f particle
+    particles
+        |> map
+            (\particle ->
+                if particleAtCoordinates coordinates particle then
+                    f particle
 
-            else
-                particle
-        )
-        particles
+                else
+                    particle
+            )
 
 
 mapCoordinates : (Coordinates -> Coordinates) -> Particle -> Particle
@@ -105,11 +161,16 @@ mapDirection f (Particle particleId direction coordinates) =
     Particle particleId (f direction) coordinates
 
 
-advanceParticles : List Particle -> List Particle
+advanceParticles : Particles -> Particles
 advanceParticles =
-    List.map advanceParticle
+    flatMap (List.map advanceParticle)
 
 
-particlesWithinDimensions : Width -> Height -> List Particle -> List Particle
+particlesWithinDimensions : Width -> Height -> Particles -> Particles
 particlesWithinDimensions width height =
-    List.filter (coordinatesWithinDimensions width height << particleCoordinates)
+    flatMap (List.filter (coordinatesWithinDimensions width height << particleCoordinates))
+
+
+flatMap : (List Particle -> List Particle) -> Particles -> Particles
+flatMap f (Particles p) =
+    Particles { p | particles = f p.particles }
