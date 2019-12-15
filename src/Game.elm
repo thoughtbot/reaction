@@ -197,13 +197,6 @@ advanceBoard ((Board bo) as board) =
         |> trimParticles
 
 
-
--- Board particleId (advanceParticles particles) obstacles
--- for each obstacle, check if there's overlap
--- if there is, do whatever we need to do to each particle overlapping with the obstacle
---   and also do whatever we need to do with the obstacle
-
-
 advanceParticles : Board -> Board
 advanceParticles (Board ({ particles } as b)) =
     Board { b | particles = Particle.advanceParticles particles }
