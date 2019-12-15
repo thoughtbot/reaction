@@ -2,12 +2,13 @@ module Main exposing (..)
 
 import Browser
 import Direction
-import Game exposing (Obstacle(..), Size(..))
+import Game
 import GameParser
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, src)
 import Html.Events exposing (onClick)
 import Levels
+import Obstacle exposing (Obstacle(..))
 import Particle exposing (Particle)
 import Time
 
@@ -142,8 +143,8 @@ nextBoardButton model =
 obstacleClass : Obstacle -> List String
 obstacleClass obstacle =
     case obstacle of
-        Cluster (Size n) _ ->
-            [ "cluster", "cluster-" ++ String.fromInt n ]
+        Cluster size _ ->
+            [ "cluster", "cluster-" ++ Obstacle.showSize size ]
 
         Portal _ _ ->
             [ "portal" ]

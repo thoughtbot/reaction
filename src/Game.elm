@@ -1,8 +1,6 @@
 module Game exposing
     ( Board
     , Game(..)
-    , Obstacle(..)
-    , Size(..)
     , advanceBoard
     , advanceBoardId
     , clicksMade
@@ -20,6 +18,7 @@ import Coordinates exposing (..)
 import Direction exposing (..)
 import GameParser exposing (ParsedBoard(..))
 import List.Extra as List
+import Obstacle exposing (..)
 import Particle exposing (..)
 
 
@@ -51,21 +50,6 @@ type Board
         , particles : Particles
         , obstacles : List Obstacle
         }
-
-
-type Size
-    = Size Int
-
-
-type Obstacle
-    = Cluster Size Coordinates
-    | Portal Coordinates Coordinates
-    | Mirror Coordinates
-    | MirrorLeft Coordinates
-    | MirrorRight Coordinates
-    | ChangeDirection Direction Coordinates
-    | BlackHole Coordinates
-    | Energizer Coordinates
 
 
 getBoardId : Board -> BoardId
@@ -178,10 +162,10 @@ renderableBoard (Board { width, height, particles, obstacles }) =
 incrementClicksOnCluster : Coordinates -> Board -> Board
 incrementClicksOnCluster coordinates ((Board ({ obstacles, clickCounter } as b)) as board) =
     case obstacleAtCoordinates obstacles coordinates of
-        Just ((Cluster (Size n) coords) as obstacle) ->
+        Just ((Cluster size coords) as obstacle) ->
             let
                 newObstacle =
-                    Cluster (Size <| n + 1) coords
+                    Cluster (Obstacle.incrementSize size) coords
             in
             Board
                 { b
@@ -194,43 +178,21 @@ incrementClicksOnCluster coordinates ((Board ({ obstacles, clickCounter } as b))
             board
 
 
-obstacleAtCoordinates : List Obstacle -> Coordinates -> Maybe Obstacle
-obstacleAtCoordinates obstacles coordinates =
-    List.filter (singleObstacleAtCoordinates coordinates) obstacles
-        |> List.head
-
-
-singleObstacleAtCoordinates : Coordinates -> Obstacle -> Bool
-singleObstacleAtCoordinates coordinates obstacle =
-    case obstacle of
-        Cluster _ coords ->
-            coords == coordinates
-
-        Portal coords1 coords2 ->
-            coords1 == coordinates || coords2 == coordinates
-
-        Mirror coords ->
-            coords == coordinates
-
-        MirrorLeft coords ->
-            coords == coordinates
-
-        MirrorRight coords ->
-            coords == coordinates
-
-        ChangeDirection _ coords ->
-            coords == coordinates
-
-        BlackHole coords ->
-            coords == coordinates
-
-        Energizer coords ->
-            coords == coordinates
-
-
 advanceBoard : Board -> Board
-advanceBoard ((Board { obstacles }) as board) =
-    List.foldl handleObstacle board obstacles
+advanceBoard ((Board ({ particles, obstacles } as b)) as board) =
+    let
+        handleObstacleOnBoard obstacle board_ =
+            let
+                outcome =
+                    handleObstacle obstacle particles obstacles
+            in
+            Board
+                { b
+                    | particles = Tuple.first <| outcome
+                    , obstacles = Tuple.second <| outcome
+                }
+    in
+    List.foldl handleObstacleOnBoard board obstacles
         |> advanceParticles
         |> trimParticles
 
@@ -242,118 +204,6 @@ advanceBoard ((Board { obstacles }) as board) =
 --   and also do whatever we need to do with the obstacle
 
 
-increaseClusterSize : Int -> Obstacle -> Obstacle
-increaseClusterSize increasedSize obstacle =
-    case obstacle of
-        Cluster (Size n) coordinates ->
-            Cluster (Size <| n + increasedSize) coordinates
-
-        _ ->
-            obstacle
-
-
-handleObstacle : Obstacle -> Board -> Board
-handleObstacle obstacle ((Board ({ particles, obstacles } as b)) as board) =
-    case obstacle of
-        Cluster (Size n) coordinates ->
-            let
-                excess =
-                    Particle.length (particlesAtCoordinates particles coordinates) + n - 5
-            in
-            if excess >= 0 then
-                Board
-                    { b
-                        | particles =
-                            particlesNotAtCoordinates particles coordinates
-                                |> Particle.mappend (Particle.take excess (particlesAtCoordinates particles coordinates))
-                                |> reactionAt coordinates
-                        , obstacles =
-                            List.filter (\o -> o /= obstacle) obstacles
-                    }
-
-            else
-                let
-                    newObstacle =
-                        obstacle
-                            |> increaseClusterSize (Particle.length <| particlesAtCoordinates particles coordinates)
-                in
-                Board
-                    { b
-                        | particles =
-                            particlesNotAtCoordinates particles coordinates
-                        , obstacles =
-                            newObstacle :: List.filter (\o -> o /= obstacle) obstacles
-                    }
-
-        Energizer coordinates ->
-            let
-                particleDirections =
-                    List.map particleDirection <| Particle.extract <| particlesAtCoordinates particles coordinates
-
-                potentiallyFireReaction ps =
-                    if List.isEmpty particleDirections then
-                        ps
-
-                    else
-                        List.foldl (energizeAt coordinates) ps particleDirections
-            in
-            Board
-                { b
-                    | particles =
-                        particlesNotAtCoordinates particles coordinates
-                            |> potentiallyFireReaction
-                }
-
-        BlackHole coordinates ->
-            Board { b | particles = particlesNotAtCoordinates particles coordinates }
-
-        Mirror coordinates ->
-            Board
-                { b
-                    | particles =
-                        mapParticlesAtCoordinates (mapDirection reverseDirection) particles coordinates
-                }
-
-        MirrorLeft coordinates ->
-            Board
-                { b
-                    | particles =
-                        mapParticlesAtCoordinates (mapDirection mirrorLeftDirection) particles coordinates
-                }
-
-        MirrorRight coordinates ->
-            Board
-                { b
-                    | particles =
-                        mapParticlesAtCoordinates (mapDirection mirrorRightDirection) particles coordinates
-                }
-
-        ChangeDirection newDirection coordinates ->
-            Board
-                { b
-                    | particles =
-                        mapParticlesAtCoordinates (mapDirection (always newDirection)) particles coordinates
-                }
-
-        Portal coordinates1 coordinates2 ->
-            let
-                particlesAtCoordinates1 =
-                    particlesAtCoordinates particles coordinates2
-                        |> Particle.map (mapCoordinates (always coordinates1))
-
-                particlesAtCoordinates2 =
-                    particlesAtCoordinates particles coordinates1
-                        |> Particle.map (mapCoordinates (always coordinates2))
-            in
-            Board
-                { b
-                    | particles =
-                        particlesNotAtAnyCoordinates particles [ coordinates1, coordinates2 ]
-                            |> Particle.mappend particlesAtCoordinates1
-                            |> Particle.mappend particlesAtCoordinates2
-                }
-
-
 advanceParticles : Board -> Board
 advanceParticles (Board ({ particles } as b)) =
     Board { b | particles = Particle.advanceParticles particles }
@@ -362,16 +212,6 @@ advanceParticles (Board ({ particles } as b)) =
 trimParticles : Board -> Board
 trimParticles (Board ({ width, height, particles } as b)) =
     Board { b | particles = particlesWithinDimensions width height particles }
-
-
-reactionAt : Coordinates -> Particles -> Particles
-reactionAt coordinates particles =
-    List.foldl (buildParticle coordinates) particles allDirections
-
-
-energizeAt : Coordinates -> Direction -> Particles -> Particles
-energizeAt coordinates direction particles =
-    List.foldl (buildParticle coordinates) particles (sidewaysDirections direction)
 
 
 loadBoards : String -> List Board
@@ -436,7 +276,7 @@ parseObstacle coordinates parsedObstacle =
             Nothing
 
         GameParser.Cluster size ->
-            Just <| Cluster (Size size) coordinates
+            Just <| Cluster (Obstacle.buildSize size) coordinates
 
         GameParser.ChangeDirection direction ->
             Just <| ChangeDirection direction coordinates
