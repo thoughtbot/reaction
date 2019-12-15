@@ -179,9 +179,9 @@ incrementClicksOnCluster coordinates ((Board ({ obstacles, clickCounter } as b))
 
 
 advanceBoard : Board -> Board
-advanceBoard ((Board ({ particles, obstacles } as b)) as board) =
+advanceBoard ((Board bo) as board) =
     let
-        handleObstacleOnBoard obstacle board_ =
+        handleObstacleOnBoard obstacle (Board ({ particles, obstacles } as b)) =
             let
                 outcome =
                     handleObstacle obstacle particles obstacles
@@ -192,7 +192,7 @@ advanceBoard ((Board ({ particles, obstacles } as b)) as board) =
                     , obstacles = Tuple.second <| outcome
                 }
     in
-    List.foldl handleObstacleOnBoard board obstacles
+    List.foldl handleObstacleOnBoard board bo.obstacles
         |> advanceParticles
         |> trimParticles
 
