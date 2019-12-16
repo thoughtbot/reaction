@@ -116,17 +116,22 @@ view model =
             div []
                 [ h2 [] [ text <| "Clicks: " ++ (String.fromInt <| Game.clicksMade model.game) ]
                 , h2 [] [ text <| "Par: " ++ (String.fromInt <| Game.parForBoard board) ]
-                , button [ onClick EndGame ] [ text "End game" ]
+                , endGameButton
                 , renderBoard <| Game.renderableBoard board
                 ]
 
         Game.Complete board _ _ ->
             div []
                 [ h2 [] [ text <| "Complete! Clicks: " ++ (String.fromInt <| Game.clicksMade model.game) ]
-                , button [ onClick EndGame ] [ text "End game" ]
+                , endGameButton
                 , nextBoardButton model
                 , renderBoard <| Game.renderableBoard board
                 ]
+
+
+endGameButton : Html Msg
+endGameButton =
+    button [ onClick EndGame ] [ text "End game" ]
 
 
 nextBoardButton : Model -> Html Msg
