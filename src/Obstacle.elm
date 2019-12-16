@@ -4,6 +4,7 @@ module Obstacle exposing
     , buildSize
     , handleObstacle
     , incrementSize
+    , isCluster
     , obstacleAtCoordinates
     , showSize
     )
@@ -26,6 +27,16 @@ type Obstacle
     | ChangeDirection Direction Coordinates
     | BlackHole Coordinates
     | Energizer Coordinates
+
+
+isCluster : Obstacle -> Bool
+isCluster obstacle =
+    case obstacle of
+        Cluster _ _ ->
+            True
+
+        _ ->
+            False
 
 
 obstacleAtCoordinates : List Obstacle -> Coordinates -> Maybe Obstacle

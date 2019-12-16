@@ -14,13 +14,13 @@ module Game exposing
     , renderableBoard
     )
 
-import Coordinates exposing (..)
-import Direction exposing (..)
+import Coordinates exposing (Coordinates, Height, Width, dimensionsToCoordinates)
+import Direction exposing (Direction)
 import Level exposing (Level, Par(..))
 import LevelBuilder
 import LevelParser
 import List.Extra as List
-import Obstacle exposing (..)
+import Obstacle exposing (Obstacle(..), handleObstacle, obstacleAtCoordinates)
 import Particle exposing (..)
 
 
@@ -76,16 +76,7 @@ isGameActive game =
 
 boardContainsClusters : Board -> Bool
 boardContainsClusters (Board { obstacles }) =
-    List.any
-        (\o ->
-            case o of
-                Cluster _ _ ->
-                    True
-
-                _ ->
-                    False
-        )
-        obstacles
+    List.any Obstacle.isCluster obstacles
 
 
 completeGameWhenNoClustersRemain : Game -> Game

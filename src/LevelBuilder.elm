@@ -34,21 +34,13 @@ parseObstacles allObstacles =
     let
         nonPortals =
             List.filter
-                (\( _, o ) -> not <| isPortal o)
+                (not << LevelParser.isPortal << Tuple.second)
                 allObstacles
 
         portals =
             List.filter
-                (\( _, o ) -> isPortal o)
+                (LevelParser.isPortal << Tuple.second)
                 allObstacles
-
-        isPortal o =
-            case o of
-                LevelParser.Portal _ ->
-                    True
-
-                _ ->
-                    False
 
         samePortals o1 o2 =
             case ( o1, o2 ) of

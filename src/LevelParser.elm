@@ -1,5 +1,6 @@
 module LevelParser exposing
     ( ParsedObstacle(..)
+    , isPortal
     , parseLevels
     )
 
@@ -23,6 +24,16 @@ type ParsedObstacle
 
 type alias List2D a =
     List (List a)
+
+
+isPortal : ParsedObstacle -> Bool
+isPortal obstacle =
+    case obstacle of
+        Portal _ ->
+            True
+
+        _ ->
+            False
 
 
 parseLevels : String -> Result String (List (Level (List2D ParsedObstacle)))
