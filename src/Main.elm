@@ -3,7 +3,6 @@ module Main exposing (..)
 import Browser
 import Direction
 import Game
-import GameParser
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, src)
 import Html.Events exposing (onClick)

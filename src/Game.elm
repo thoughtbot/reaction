@@ -16,7 +16,9 @@ module Game exposing
 
 import Coordinates exposing (..)
 import Direction exposing (..)
-import GameParser exposing (ParsedBoard(..))
+import Level exposing (Level, Par(..))
+import LevelBuilder
+import LevelParser
 import List.Extra as List
 import Obstacle exposing (..)
 import Particle exposing (..)
@@ -24,10 +26,6 @@ import Particle exposing (..)
 
 type ClickCounter
     = ClickCounter Int
-
-
-type Par
-    = Par Int
 
 
 type Game
@@ -43,12 +41,10 @@ type BoardId
 type Board
     = Board
         { boardId : BoardId
-        , par : Par
         , clickCounter : ClickCounter
-        , width : Width
-        , height : Height
         , particles : Particles
         , obstacles : List Obstacle
+        , level : Level (List Obstacle)
         }
 
 
@@ -63,17 +59,9 @@ advanceBoardId (BoardId bId) =
 
 
 parForBoard : Board -> Int
-parForBoard (Board { par }) =
-    let
-        (Par n) =
-            par
-    in
-    n
-
-
-registerObstacle : Obstacle -> Board -> Board
-registerObstacle obstacle (Board ({ obstacles } as b)) =
-    Board { b | obstacles = obstacle :: obstacles }
+parForBoard (Board { level }) =
+    Level.levelPar level
+        |> Level.parValue
 
 
 isGameActive : Game -> Bool
@@ -103,12 +91,12 @@ boardContainsClusters (Board { obstacles }) =
 completeGameWhenNoClustersRemain : Game -> Game
 completeGameWhenNoClustersRemain game =
     case game of
-        Started ((Board { par, clickCounter }) as board) ->
+        Started ((Board { clickCounter, level }) as board) ->
             if boardContainsClusters board then
                 Started board
 
             else
-                Complete board par clickCounter
+                Complete board (Level.levelPar level) clickCounter
 
         _ ->
             game
@@ -148,13 +136,13 @@ clicksMade game =
 
 
 renderableBoard : Board -> List (List ( List Particle, Maybe Obstacle ))
-renderableBoard (Board { width, height, particles, obstacles }) =
+renderableBoard ((Board { particles, obstacles }) as board) =
     let
         tileInformation coordinates =
             ( Particle.extract <| particlesAtCoordinates particles coordinates, obstacleAtCoordinates obstacles coordinates )
 
         allCoordinates =
-            dimensionsToCoordinates width height
+            dimensionsToCoordinates (boardWidth board) (boardHeight board)
     in
     List.map (List.map tileInformation) allCoordinates
 
@@ -203,133 +191,42 @@ advanceParticles (Board ({ particles } as b)) =
 
 
 trimParticles : Board -> Board
-trimParticles (Board ({ width, height, particles } as b)) =
-    Board { b | particles = particlesWithinDimensions width height particles }
+trimParticles ((Board ({ particles } as b)) as board) =
+    Board { b | particles = particlesWithinDimensions (boardWidth board) (boardHeight board) particles }
 
 
 loadBoards : String -> List Board
-loadBoards input =
+loadBoards =
+    List.indexedMap buildBoardFromLevel << loadLevels
+
+
+loadLevels : String -> List (Level (List Obstacle))
+loadLevels input =
     let
         parsedBoards =
-            GameParser.parseBoards input
+            LevelParser.parseLevels input
     in
     Result.toMaybe parsedBoards
-        |> Maybe.map (List.indexedMap parsedBoardToBoard)
+        |> Maybe.map (List.map LevelBuilder.parsedLevelToLevel)
         |> Maybe.withDefault []
 
 
-parseObstacles : List ( Coordinates, GameParser.ParsedObstacle ) -> List (Maybe Obstacle)
-parseObstacles allObstacles =
-    let
-        nonPortals =
-            List.filter
-                (\( _, o ) -> not <| isPortal o)
-                allObstacles
-
-        portals =
-            List.filter
-                (\( _, o ) -> isPortal o)
-                allObstacles
-
-        isPortal o =
-            case o of
-                GameParser.Portal _ ->
-                    True
-
-                _ ->
-                    False
-
-        samePortals o1 o2 =
-            case ( o1, o2 ) of
-                ( GameParser.Portal n1, GameParser.Portal n2 ) ->
-                    n1 == n2
-
-                _ ->
-                    False
-
-        portalObstacles =
-            List.gatherWith (\( _, o1 ) ( _, o2 ) -> samePortals o1 o2) portals
-                |> List.map
-                    (\( o, os ) ->
-                        case ( o, os ) of
-                            ( ( c1, _ ), [ ( c2, _ ) ] ) ->
-                                Just <| Portal c1 c2
-
-                            _ ->
-                                Nothing
-                    )
-    in
-    List.map (\( c, o ) -> parseObstacle c o) nonPortals ++ portalObstacles
-
-
-parseObstacle : Coordinates -> GameParser.ParsedObstacle -> Maybe Obstacle
-parseObstacle coordinates parsedObstacle =
-    case parsedObstacle of
-        GameParser.Empty ->
-            Nothing
-
-        GameParser.Cluster size ->
-            Just <| Cluster (Obstacle.buildSize size) coordinates
-
-        GameParser.ChangeDirection direction ->
-            Just <| ChangeDirection direction coordinates
-
-        GameParser.BlackHole ->
-            Just <| BlackHole coordinates
-
-        GameParser.Energizer ->
-            Just <| Energizer coordinates
-
-        GameParser.Mirror ->
-            Just <| Mirror coordinates
-
-        GameParser.MirrorLeft ->
-            Just <| MirrorLeft coordinates
-
-        GameParser.MirrorRight ->
-            Just <| MirrorRight coordinates
-
-        GameParser.Portal id ->
-            Nothing
-
-
-parsedBoardToBoard : Int -> GameParser.ParsedBoard -> Board
-parsedBoardToBoard boardId parsedBoard =
-    let
-        (ParsedBoard (GameParser.Par par) rows) =
-            parsedBoard
-
-        width =
-            List.head cleanedRows |> Maybe.withDefault [] |> List.length
-
-        height =
-            List.length cleanedRows
-
-        cleanedRows =
-            List.filter (not << List.isEmpty) rows
-                |> List.reverse
-
-        obstaclesToAdd =
-            List.filterMap identity <|
-                parseObstacles <|
-                    List.concat <|
-                        List.indexedMap
-                            (\y row ->
-                                List.indexedMap
-                                    (\x col ->
-                                        ( coordinatesFromPair ( x, y ), col )
-                                    )
-                                    row
-                            )
-                            cleanedRows
-    in
+buildBoardFromLevel : Int -> Level (List Obstacle) -> Board
+buildBoardFromLevel boardId level =
     Board
         { boardId = BoardId boardId
-        , par = Par par
         , clickCounter = ClickCounter 0
-        , width = buildWidth width
-        , height = buildHeight height
         , particles = Particle.initial
-        , obstacles = []
+        , obstacles = Level.levelObstacles level
+        , level = level
         }
-        |> (\board -> List.foldl registerObstacle board obstaclesToAdd)
+
+
+boardWidth : Board -> Width
+boardWidth (Board { level }) =
+    Level.levelWidth level
+
+
+boardHeight : Board -> Height
+boardHeight (Board { level }) =
+    Level.levelHeight level

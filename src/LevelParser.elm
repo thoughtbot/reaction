@@ -1,21 +1,12 @@
-module GameParser exposing
-    ( Par(..)
-    , ParsedBoard(..)
-    , ParsedObstacle(..)
-    , parseBoard
-    , parseBoards
+module LevelParser exposing
+    ( ParsedObstacle(..)
+    , parseLevels
     )
 
+import Coordinates exposing (buildHeight, buildWidth)
 import Direction exposing (Direction(..))
+import Level exposing (Level, Par(..))
 import Parser exposing (..)
-
-
-type Par
-    = Par Int
-
-
-type ParsedBoard
-    = ParsedBoard Par (List (List ParsedObstacle))
 
 
 type ParsedObstacle
@@ -30,31 +21,41 @@ type ParsedObstacle
     | Empty
 
 
-parseBoards : String -> Result String (List ParsedBoard)
-parseBoards input =
-    run boardsParser input
+type alias List2D a =
+    List (List a)
+
+
+parseLevels : String -> Result String (List (Level (List2D ParsedObstacle)))
+parseLevels input =
+    run levelsParser input
         |> Result.mapError deadEndsToString
 
 
-parseBoard : String -> Result String ParsedBoard
-parseBoard input =
-    run boardParser input
-        |> Result.mapError deadEndsToString
-
-
-boardsParser : Parser (List ParsedBoard)
-boardsParser =
+levelsParser : Parser (List (Level (List2D ParsedObstacle)))
+levelsParser =
     succeed identity
         |. newlineParser
-        |= many boardParser
+        |= many levelParser
 
 
-boardParser : Parser ParsedBoard
-boardParser =
-    succeed ParsedBoard
+levelParser : Parser (Level (List2D ParsedObstacle))
+levelParser =
+    succeed buildLevel
         |. animationParser
         |= parParser
         |= rowsParser
+
+
+buildLevel : Par -> List2D ParsedObstacle -> Level (List2D ParsedObstacle)
+buildLevel par rows =
+    let
+        height =
+            List.length rows
+
+        width =
+            List.head rows |> Maybe.withDefault [] |> List.length
+    in
+    Level.buildLevel par (buildWidth width) (buildHeight height) rows
 
 
 animationParser : Parser ()
@@ -65,7 +66,7 @@ animationParser =
         |. newlineParser
 
 
-rowsParser : Parser (List (List ParsedObstacle))
+rowsParser : Parser (List2D ParsedObstacle)
 rowsParser =
     sepBy rowParser newlineParser
 
