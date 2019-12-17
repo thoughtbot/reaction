@@ -168,3 +168,37 @@ td.cluster-4 {
 .particle-left { transform: rotate(270deg); }
 .particle-right { transform: rotate(90deg); }
 .particle-down { transform: rotate(180deg); }
+
+.mirror-right {
+  .particle-left { transform: rotate(225deg); }
+  .particle-down { transform: rotate(225deg); }
+  .particle-right { transform: rotate(45deg); }
+  .particle-up { transform: rotate(45deg); }
+}
+
+.mirror-left {
+  .particle-left { transform: rotate(225deg); }
+  .particle-right { transform: rotate(45deg); }
+  .particle-down { transform: rotate(45deg); }
+  .particle-up { transform: rotate(225deg); }
+}
+
+.change-direction-left {
+  .particle-down { transform: rotate(225deg); }
+  .particle-up { transform: rotate(315deg); }
+}
+
+.change-direction-down {
+  .particle-left { transform: rotate(225deg); }
+  .particle-right { transform: rotate(135deg); }
+}
+
+.change-direction-right {
+  .particle-down { transform: rotate(135deg); }
+  .particle-up { transform: rotate(45deg); }
+}
+
+.change-direction-up {
+  .particle-right { transform: rotate(45deg); }
+  .particle-left { transform: rotate(315deg); }
+}
