@@ -1,12 +1,12 @@
 {
-  "main.css": "/static/css/main.1b2cc07b.chunk.css",
-  "main.js": "/static/js/main.aec64122.chunk.js",
-  "main.css.map": "/static/css/main.1b2cc07b.chunk.css.map",
-  "main.js.map": "/static/js/main.aec64122.chunk.js.map",
-  "runtime~main.js": "/static/js/runtime~main.1b922744.js",
-  "runtime~main.js.map": "/static/js/runtime~main.1b922744.js.map",
-  "vendors~main.js": "/static/js/vendors~main.3ca81432.chunk.js",
-  "vendors~main.js.map": "/static/js/vendors~main.3ca81432.chunk.js.map",
-  "index.html": "/index.html",
-  "static/media/main.css": "/static/media/twoToThreeCore.3e21109a.gif"
+  "main.css": "/reaction/static/css/main.920f98de.chunk.css",
+  "main.js": "/reaction/static/js/main.3aba9f18.chunk.js",
+  "main.css.map": "/reaction/static/css/main.920f98de.chunk.css.map",
+  "main.js.map": "/reaction/static/js/main.3aba9f18.chunk.js.map",
+  "runtime~main.js": "/reaction/static/js/runtime~main.df4c00fb.js",
+  "runtime~main.js.map": "/reaction/static/js/runtime~main.df4c00fb.js.map",
+  "vendors~main.js": "/reaction/static/js/vendors~main.3ca81432.chunk.js",
+  "vendors~main.js.map": "/reaction/static/js/vendors~main.3ca81432.chunk.js.map",
+  "index.html": "/reaction/index.html",
+  "static/media/main.css": "/reaction/static/media/twoToThreeCore.3e21109a.gif"
 }
