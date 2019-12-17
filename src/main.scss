@@ -40,7 +40,7 @@ table tr td {
   padding: 0;
   margin: 0;
   overflow: hidden;
-  background-image: url('images/space.gif');
+  background-image: url('./images/space.gif');
   background-size: 8vw;
   background-repeat: no-repeat;
   span {
@@ -51,7 +51,7 @@ table tr td {
 }
 
 td.portal {
-  background-image: url('images/portal1.gif');
+  background-image: url('./images/portal1.gif');
 
   &.has-particle .particle {
     display: none;
@@ -59,7 +59,7 @@ td.portal {
 }
 
 td.black-hole {
-  background-image: url('images/blackHole.gif');
+  background-image: url('./images/blackHole.gif');
 
   &.has-particle .particle {
     display: none;
@@ -67,7 +67,7 @@ td.black-hole {
 }
 
 td.change-direction {
-  background-image: url('images/arrow.gif');
+  background-image: url('./images/arrow.gif');
 }
 
 .change-direction-up {
@@ -92,27 +92,27 @@ td.change-direction {
 }
 
 td.mirror {
-  background-image: url('images/reverse.gif');
+  background-image: url('./images/reverse.gif');
 }
 
 td.energizer {
-  background-image: url('images/energizer.gif');
+  background-image: url('./images/energizer.gif');
 }
 
 td.mirror-left {
-  background-image: url('images/mirror.gif');
+  background-image: url('./images/mirror.gif');
   transform: rotate(90deg);
 }
 
 td.mirror-right {
-  background-image: url('images/mirror.gif');
+  background-image: url('./images/mirror.gif');
 }
 
 td.cluster-1 {
-  background-image: url('images/oneCore.gif');
+  background-image: url('./images/oneCore.gif');
 
   &.has-particle {
-    background-image: url('images/oneToTwoCore.gif');
+    background-image: url('./images/oneToTwoCore.gif');
 
     .particle {
       display: none;
@@ -121,10 +121,10 @@ td.cluster-1 {
 }
 
 td.cluster-2 {
-  background-image: url('images/twoCore.gif');
+  background-image: url('./images/twoCore.gif');
 
   &.has-particle {
-    background-image: url('images/twoToThreeCore.gif');
+    background-image: url('./images/twoToThreeCore.gif');
 
     .particle {
       display: none;
@@ -133,10 +133,10 @@ td.cluster-2 {
 }
 
 td.cluster-3 {
-  background-image: url('images/threeCore.gif');
+  background-image: url('./images/threeCore.gif');
 
   &.has-particle {
-    background-image: url('images/threeToFourCore.gif');
+    background-image: url('./images/threeToFourCore.gif');
 
     .particle {
       display: none;
@@ -145,10 +145,10 @@ td.cluster-3 {
 }
 
 td.cluster-4 {
-  background-image: url('images/fourCore.gif');
+  background-image: url('./images/fourCore.gif');
 
   &.has-particle {
-    background-image: url('images/fourExplosion.gif');
+    background-image: url('./images/fourExplosion.gif');
 
     .particle {
       display: none;
@@ -158,7 +158,7 @@ td.cluster-4 {
 
 .particle {
   display: inline-block;
-  background-image: url('images/projectile2.gif');
+  background-image: url('./images/projectile2.gif');
   background-size: 2vw;
   width: 2vw;
   height: 4vw;
