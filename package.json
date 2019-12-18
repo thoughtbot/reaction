@@ -1,7 +1,6 @@
 {
   "devDependencies": {
-    "elm-format": "^0.8.2",
-    "gh-pages": "^2.1.1"
+    "elm-format": "^0.8.2"
   },
   "dependencies": {
     "node-sass-chokidar": "^1.4.0"
