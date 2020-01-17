@@ -1,16 +1,18 @@
 module Main exposing (main)
 
 import Browser
-import Model
+import Model exposing (Msg(..))
 import Update
 import View
 
 
-main : Program Model.Flags Model.Model Update.Msg
+main : Program Model.Flags Model.Model Model.Msg
 main =
-    Browser.element
+    Browser.application
         { view = View.view
         , init = Update.init
         , update = Update.update
         , subscriptions = Update.subscriptions
+        , onUrlChange = ChangedUrl
+        , onUrlRequest = ClickedLink
         }

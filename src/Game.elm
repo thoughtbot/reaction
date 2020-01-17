@@ -1,10 +1,14 @@
 module Game exposing
     ( Board
+    , BoardId
     , Game(..)
     , advanceBoard
     , advanceBoardId
+    , boardClicks
+    , boardIdUrlParser
     , clicksMade
     , completeGameWhenNoClustersRemain
+    , gameBoard
     , getBoardId
     , incrementClicksOnCluster
     , isGameActive
@@ -12,16 +16,17 @@ module Game exposing
     , mapBoard
     , parForBoard
     , renderableBoard
+    , showBoardId
     )
 
 import Coordinates exposing (Coordinates, Height, Width, dimensionsToCoordinates)
-import Direction exposing (Direction)
 import Level exposing (Level, Par(..))
 import LevelBuilder
 import LevelParser
 import List.Extra as List
 import Obstacle exposing (Obstacle(..), handleObstacle, obstacleAtCoordinates)
 import Particle exposing (..)
+import Url.Parser as Parser exposing (Parser)
 
 
 type ClickCounter
@@ -29,8 +34,7 @@ type ClickCounter
 
 
 type Game
-    = NotStarted
-    | Started Board
+    = Started Board
     | Complete Board Par ClickCounter
 
 
@@ -48,6 +52,11 @@ type Board
         }
 
 
+showBoardId : BoardId -> String
+showBoardId (BoardId bId) =
+    String.fromInt bId
+
+
 getBoardId : Board -> BoardId
 getBoardId (Board { boardId }) =
     boardId
@@ -62,6 +71,16 @@ parForBoard : Board -> Int
 parForBoard (Board { level }) =
     Level.levelPar level
         |> Level.parValue
+
+
+gameBoard : Game -> Board
+gameBoard game =
+    case game of
+        Started board ->
+            board
+
+        Complete board _ _ ->
+            board
 
 
 isGameActive : Game -> Bool
@@ -113,14 +132,16 @@ incrementClickCounter (ClickCounter value) =
     ClickCounter <| value + 1
 
 
+boardClicks : Board -> Int
+boardClicks (Board { clickCounter }) =
+    clickCounterValue clickCounter
+
+
 clicksMade : Game -> Int
 clicksMade game =
     case game of
-        NotStarted ->
-            0
-
-        Started (Board { clickCounter }) ->
-            clickCounterValue clickCounter
+        Started board ->
+            boardClicks board
 
         Complete _ _ (ClickCounter n) ->
             n
@@ -205,7 +226,7 @@ loadLevels input =
 buildBoardFromLevel : Int -> Level (List Obstacle) -> Board
 buildBoardFromLevel boardId level =
     Board
-        { boardId = BoardId boardId
+        { boardId = BoardId <| boardId + 1
         , clickCounter = ClickCounter 0
         , particles = Particle.initial
         , obstacles = Level.levelObstacles level
@@ -221,3 +242,8 @@ boardWidth (Board { level }) =
 boardHeight : Board -> Height
 boardHeight (Board { level }) =
     Level.levelHeight level
+
+
+boardIdUrlParser : Parser (BoardId -> a) a
+boardIdUrlParser =
+    Parser.custom "BoardId" (Maybe.map BoardId << String.toInt)

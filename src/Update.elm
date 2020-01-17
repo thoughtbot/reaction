@@ -1,61 +1,83 @@
 module Update exposing
-    ( Msg(..)
-    , init
+    ( init
     , subscriptions
     , update
     )
 
-import Game
-import Model exposing (Model)
+import Browser
+import Browser.Navigation as Nav
+import Model exposing (Model(..), Msg(..))
 import Obstacle exposing (Obstacle(..))
-import Time
+import Page.Board.Main as Board
+import Page.Home.Main as Home
+import Route
+import Session
+import Url exposing (Url)
 
 
-type Msg
-    = NoOp
-    | StartGame Game.Board
-    | EndGame
-    | AdvanceBoard
-    | ClickObstacle (Maybe Obstacle)
-
-
-init : Model.Flags -> ( Model, Cmd Msg )
-init _ =
-    ( Model.initial, Cmd.none )
+init : Model.Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init _ url key =
+    let
+        session =
+            Session.initial key
+    in
+    Model.changeRouteTo (Route.fromUrl url)
+        (Loading session)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        NoOp ->
-            ( model, Cmd.none )
+    case ( msg, model ) of
+        ( ClickedLink urlRequest, _ ) ->
+            case urlRequest of
+                Browser.Internal url ->
+                    case url.fragment of
+                        Nothing ->
+                            ( model, Cmd.none )
 
-        StartGame board ->
-            ( { model | game = Game.Started board }, Cmd.none )
+                        Just _ ->
+                            ( model
+                            , Nav.pushUrl (Session.navKey (Model.toSession model)) (Url.toString url)
+                            )
 
-        EndGame ->
-            ( { model | game = Game.NotStarted }, Cmd.none )
+                Browser.External href ->
+                    ( model
+                    , Nav.load href
+                    )
 
-        AdvanceBoard ->
-            ( { model
-                | game =
-                    Game.mapBoard Game.advanceBoard model.game
-                        |> Game.completeGameWhenNoClustersRemain
-              }
-            , Cmd.none
+        ( ChangedUrl url, _ ) ->
+            Model.changeRouteTo (Route.fromUrl url) model
+
+        ( HandleHomeMsg subMsg, Home model_ ) ->
+            let
+                ( newModel, newMsg ) =
+                    Home.update subMsg model_
+            in
+            ( Home newModel
+            , Cmd.map HandleHomeMsg newMsg
             )
 
-        ClickObstacle (Just (Cluster _ coordinates)) ->
-            ( { model | game = Game.mapBoard (Game.incrementClicksOnCluster coordinates) model.game }, Cmd.none )
+        ( HandleBoardMsg subMsg, Board model_ ) ->
+            let
+                ( newModel, newMsg ) =
+                    Board.update subMsg model_
+            in
+            ( Board newModel
+            , Cmd.map HandleBoardMsg newMsg
+            )
 
-        ClickObstacle _ ->
+        ( _, _ ) ->
             ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { game } =
-    if Game.isGameActive game then
-        Time.every 600 (always AdvanceBoard)
+subscriptions model =
+    case model of
+        Home homeModel ->
+            Sub.map HandleHomeMsg <| Home.subscriptions homeModel
 
-    else
-        Sub.none
+        Board boardModel ->
+            Sub.map HandleBoardMsg <| Board.subscriptions boardModel
+
+        _ ->
+            Sub.none
