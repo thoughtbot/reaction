@@ -3,6 +3,7 @@ module Model exposing
     , Model(..)
     , Msg(..)
     , changeRouteTo
+    , mapSession
     , toSession
     )
 
@@ -31,6 +32,7 @@ type Msg
     | HandleBoardMsg Board.Msg
     | ChangedUrl Url
     | ClickedLink Browser.UrlRequest
+    | SetGameSpeed Session.GameSpeed
 
 
 toSession : Model -> Session.Model
@@ -47,6 +49,22 @@ toSession model =
 
         Board { session } ->
             session
+
+
+mapSession : (Session.Model -> Session.Model) -> Model -> Model
+mapSession f model =
+    case model of
+        Home homeModel ->
+            Home { homeModel | session = f homeModel.session }
+
+        NotFound session ->
+            NotFound <| f session
+
+        Loading session ->
+            Loading <| f session
+
+        Board boardModel ->
+            Board { boardModel | session = f boardModel.session }
 
 
 changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )

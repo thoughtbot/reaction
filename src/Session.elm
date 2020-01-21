@@ -1,5 +1,6 @@
 module Session exposing
-    ( Model
+    ( GameSpeed(..)
+    , Model
     , WithSession
     , initial
     , navKey
@@ -10,6 +11,12 @@ import Game
 import Levels
 
 
+type GameSpeed
+    = Normal
+    | Fast
+    | Faster
+
+
 type alias WithSession a =
     { a | session : Model }
 
@@ -17,6 +24,7 @@ type alias WithSession a =
 type alias Model =
     { key : Nav.Key
     , boards : List Game.Board
+    , gameSpeed : GameSpeed
     }
 
 
@@ -24,6 +32,7 @@ initial : Nav.Key -> Model
 initial key =
     { key = key
     , boards = Game.loadBoards Levels.levels
+    , gameSpeed = Normal
     }
 
 

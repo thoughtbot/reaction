@@ -66,6 +66,11 @@ update msg model =
             , Cmd.map HandleBoardMsg newMsg
             )
 
+        ( SetGameSpeed gameSpeed, _ ) ->
+            ( Model.mapSession (\s -> { s | gameSpeed = gameSpeed }) model
+            , Cmd.none
+            )
+
         ( _, _ ) ->
             ( model, Cmd.none )
 

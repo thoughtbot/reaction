@@ -47,8 +47,20 @@ nextBoard model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Time.every 600 (always AdvanceBoard)
+subscriptions { session } =
+    let
+        calculateSpeed { gameSpeed } =
+            case gameSpeed of
+                Session.Normal ->
+                    600
+
+                Session.Fast ->
+                    300
+
+                Session.Faster ->
+                    150
+    in
+    Time.every (calculateSpeed session) (always AdvanceBoard)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
