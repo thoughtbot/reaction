@@ -1,12 +1,16 @@
 {
-  "main.css": "/reaction/static/css/main.65f60f73.chunk.css",
-  "main.js": "/reaction/static/js/main.f4b62b3c.chunk.js",
-  "main.css.map": "/reaction/static/css/main.65f60f73.chunk.css.map",
-  "main.js.map": "/reaction/static/js/main.f4b62b3c.chunk.js.map",
+  "main.css": "/reaction/static/css/main.4dc15527.chunk.css",
+  "main.js": "/reaction/static/js/main.5994790b.chunk.js",
+  "main.js.map": "/reaction/static/js/main.5994790b.chunk.js.map",
   "runtime~main.js": "/reaction/static/js/runtime~main.df4c00fb.js",
   "runtime~main.js.map": "/reaction/static/js/runtime~main.df4c00fb.js.map",
-  "vendors~main.js": "/reaction/static/js/vendors~main.3ca81432.chunk.js",
-  "vendors~main.js.map": "/reaction/static/js/vendors~main.3ca81432.chunk.js.map",
+  "vendors~main.js": "/reaction/static/js/vendors~main.604c6712.chunk.js",
+  "vendors~main.js.map": "/reaction/static/js/vendors~main.604c6712.chunk.js.map",
+  "./service-worker.js": "/reaction/./service-worker.js",
+  "favicon.ico": "/reaction/favicon.ico",
   "index.html": "/reaction/index.html",
+  "logo.svg": "/reaction/logo.svg",
+  "manifest.json": "/reaction/manifest.json",
+  "precache-manifest.2b6f83b2206bf87ddc81a002853bd405.js": "/reaction/precache-manifest.2b6f83b2206bf87ddc81a002853bd405.js",
   "static/media/main.css": "/reaction/static/media/twoToThreeCore.3e21109a.gif"
 }

@@ -1,1 +1,30 @@
-"use strict";var precacheConfig=[["/reaction/index.html","57af4b8bb476dcbf4115e5b112d8dffb"],["/reaction/static/css/main.65f60f73.chunk.css","69dc142445b73439f204495c29a5424e"],["/reaction/static/js/main.f4b62b3c.chunk.js","d4beef90236adf8ca9885884fa23e20a"],["/reaction/static/js/runtime~main.df4c00fb.js","d6bfabd3705eda98de9640845c6f71de"],["/reaction/static/js/vendors~main.3ca81432.chunk.js","86fba34edc08a61c670b6c7527e6b813"],["/reaction/static/media/arrow.a981eb0b.gif","a981eb0b5a25fe811906119818c0fa86"],["/reaction/static/media/blackHole.11bc7ffe.gif","11bc7ffe767a2b295472d274380b7fdc"],["/reaction/static/media/energizer.054a9323.gif","054a9323ff474c0685c90b1aabe8b363"],["/reaction/static/media/fourCore.aaf85ce6.gif","aaf85ce674ff0bafca1362765442ba06"],["/reaction/static/media/fourExplosion.79a33b66.gif","79a33b66b3a07be1be159d10315cefe8"],["/reaction/static/media/mirror.5585eafa.gif","5585eafafe33a2c503b3d3675689ab43"],["/reaction/static/media/oneCore.6237954c.gif","6237954cbfe0b1d096eabe25ec0d7d25"],["/reaction/static/media/oneToTwoCore.bc94539c.gif","bc94539ce96f66c2b216830220146438"],["/reaction/static/media/portal1.94056806.gif","94056806e25f1fc0245e3316f0807454"],["/reaction/static/media/reverse.2b4f3ea6.gif","2b4f3ea68e905659765dd867a170c026"],["/reaction/static/media/space.d623d7b9.gif","d623d7b90abcc6646db599e1e13f7a89"],["/reaction/static/media/threeCore.e35bf73b.gif","e35bf73bcd7c3f9beea0a097a160084f"],["/reaction/static/media/threeToFourCore.ce3e14d7.gif","ce3e14d733553cd16955e5ac70786698"],["/reaction/static/media/twoCore.d38d740c.gif","d38d740cf35ff00d6507dea72b5a1ebb"],["/reaction/static/media/twoToThreeCore.3e21109a.gif","3e21109aadff4d6bc2319c720a3a0b2a"]],cacheName="sw-precache-v3-sw-precache-webpack-plugin-"+(self.registration?self.registration.scope:""),ignoreUrlParametersMatching=[/^utm_/],addDirectoryIndex=function(e,t){var a=new URL(e);return"/"===a.pathname.slice(-1)&&(a.pathname+=t),a.toString()},cleanResponse=function(e){return e.redirected?("body"in e?Promise.resolve(e.body):e.blob()).then(function(t){return new Response(t,{headers:e.headers,status:e.status,statusText:e.statusText})}):Promise.resolve(e)},createCacheKey=function(e,t,a,n){var r=new URL(e);return n&&r.pathname.match(n)||(r.search+=(r.search?"&":"")+encodeURIComponent(t)+"="+encodeURIComponent(a)),r.toString()},isPathWhitelisted=function(e,t){if(0===e.length)return!0;var a=new URL(t).pathname;return e.some(function(e){return a.match(e)})},stripIgnoredUrlParameters=function(e,t){var a=new URL(e);return a.hash="",a.search=a.search.slice(1).split("&").map(function(e){return e.split("=")}).filter(function(e){return t.every(function(t){return!t.test(e[0])})}).map(function(e){return e.join("=")}).join("&"),a.toString()},hashParamName="_sw-precache",urlsToCacheKeys=new Map(precacheConfig.map(function(e){var t=e[0],a=e[1],n=new URL(t,self.location),r=createCacheKey(n,hashParamName,a,/\.\w{8}\./);return[n.toString(),r]}));function setOfCachedUrls(e){return e.keys().then(function(e){return e.map(function(e){return e.url})}).then(function(e){return new Set(e)})}self.addEventListener("install",function(e){e.waitUntil(caches.open(cacheName).then(function(e){return setOfCachedUrls(e).then(function(t){return Promise.all(Array.from(urlsToCacheKeys.values()).map(function(a){if(!t.has(a)){var n=new Request(a,{credentials:"same-origin"});return fetch(n).then(function(t){if(!t.ok)throw new Error("Request for "+a+" returned a response with status "+t.status);return cleanResponse(t).then(function(t){return e.put(a,t)})})}}))})}).then(function(){return self.skipWaiting()}))}),self.addEventListener("activate",function(e){var t=new Set(urlsToCacheKeys.values());e.waitUntil(caches.open(cacheName).then(function(e){return e.keys().then(function(a){return Promise.all(a.map(function(a){if(!t.has(a.url))return e.delete(a)}))})}).then(function(){return self.clients.claim()}))}),self.addEventListener("fetch",function(e){if("GET"===e.request.method){var t,a=stripIgnoredUrlParameters(e.request.url,ignoreUrlParametersMatching);(t=urlsToCacheKeys.has(a))||(a=addDirectoryIndex(a,"index.html"),t=urlsToCacheKeys.has(a));0,t&&e.respondWith(caches.open(cacheName).then(function(e){return e.match(urlsToCacheKeys.get(a)).then(function(e){if(e)return e;throw Error("The cached response that was expected is missing.")})}).catch(function(t){return console.warn('Couldn\'t serve response for "%s" from cache: %O',e.request.url,t),fetch(e.request)}))}});
+/**
+ * Welcome to your Workbox-powered service worker!
+ *
+ * You'll need to register this file in your web app and you should
+ * disable HTTP caching for this file too.
+ * See https://goo.gl/nhQhGp
+ *
+ * The rest of the code is auto-generated. Please don't update this file
+ * directly; instead, make changes to your Workbox build configuration
+ * and re-run your build process.
+ * See https://goo.gl/2aRDsh
+ */
+
+importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
+
+importScripts(
+  "/reaction/precache-manifest.2b6f83b2206bf87ddc81a002853bd405.js"
+);
+
+workbox.core.skipWaiting();
+
+workbox.core.clientsClaim();
+
+/**
+ * The workboxSW.precacheAndRoute() method efficiently caches and responds to
+ * requests for URLs in the manifest.
+ * See https://goo.gl/S9QRab
+ */
+self.__precacheManifest = [].concat(self.__precacheManifest || []);
+workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
